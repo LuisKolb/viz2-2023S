@@ -15,8 +15,8 @@
 
       // set the dimensions and margins of the graph
       var margin = {top: 20, right: 30, bottom: 30, left: 40},
-          width = 460 - margin.left - margin.right,
-          height = 400 - margin.top - margin.bottom;
+          width = 300 - margin.left - margin.right,
+          height = 300 - margin.top - margin.bottom;
       
       // append the svg object to the body of the page
       var svg = d3.select("#chart")
@@ -27,6 +27,60 @@
           .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
       
+      
+      
+      // read data
+      var fileNames = ['grid_1d.txt', 'sub_grid_prob_0.txt'];
+      var filePaths = fileNames.map(fileName => 'resources/' + fileName);
+
+      const promises = filePaths.map(filePath =>
+        fetch(filePath)
+          .then(response => response.text())
+          .then(data => {
+            const lines = data.trim().split('\n');
+            const numbers = lines.map(line => parseFloat(line));
+            return numbers;
+          })
+          .catch(error => console.error(`Error reading ${filePath}:`, error))
+      );
+
+      Promise.all(promises)
+          .then(results => {
+            var grid_1d = results[0];
+            console.log("grid_1d.txt: ");
+            console.log(grid_1d);
+
+            var sub_grid_prob_0 = results[1];
+            console.log("sub_grid_prob_0.txt: ");
+            console.log(sub_grid_prob_0);
+
+            const data = sub_grid_prob_0;
+            const width = 100;
+            const height = 100;
+            const thresholds = 10;
+            const extent = d3.extent(data);
+            const contours = d3.contours()
+              .size([width, height])
+              .thresholds(d3.range(extent[0], extent[1], (extent[1] - extent[0]) / thresholds));
+            const contoursData = contours(data);
+            const projection = d3.geoIdentity()
+              .fitSize([300, 300], contoursData[0]);
+            const path = d3.geoPath()
+              .projection(projection);
+            svg
+              .selectAll("path")
+              .data(contoursData)
+              .enter()
+              .append("path")
+              .attr("d", d3.geoPath())
+              .attr("fill", "none")
+              .attr("stroke", "#69b3a2")
+              .attr("stroke-linejoin", "round")
+          
+          })
+
+
+      /*
       // read data
       d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/data_for_density2d.csv", function(data) {
       
@@ -63,6 +117,7 @@
             .attr("stroke", "#69b3a2")
             .attr("stroke-linejoin", "round")
       })
+      */
       </script>
   </body>
 </html>
