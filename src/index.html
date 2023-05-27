@@ -15,8 +15,8 @@
 
       // set the dimensions and margins of the graph
       var margin = {top: 20, right: 30, bottom: 30, left: 40},
-          width = 300 - margin.left - margin.right,
-          height = 300 - margin.top - margin.bottom;
+          width = 350 - margin.left - margin.right,
+          height = 350 - margin.top - margin.bottom;
       
       // append the svg object to the body of the page
       var svg = d3.select("#chart")
@@ -54,17 +54,49 @@
             console.log("sub_grid_prob_0.txt: ");
             console.log(sub_grid_prob_0);
 
+            // size of the plot
+            var size = {
+              x : 300,
+              y : 300
+            };
+
             const data = sub_grid_prob_0;
+            // width and height in sense of shape of data
             const width = 100;
             const height = 100;
             const thresholds = 10;
             const extent = d3.extent(data);
+            
+            /* Adding axis messes up contour lines
+            const x = d3.scaleLinear()
+              .domain([extent[0], extent[1]])
+              .range([0, size.x]);
+            const y = d3.scaleLinear()
+              .domain([extent[0], extent[1]])
+              .range([size.y, 0]);
+
+            // Add X axis
+            svg.append("g")
+              .attr("transform", "translate(0," + size.y + ")")
+              .call(d3.axisBottom(x));
+            // Add Y axis
+            svg.append("g")
+              .call(d3.axisLeft(y));
+            */
+            /* density data not working :/
+            const densityData = d3.contourDensity()
+              .y(function(d) { return y(d.y);})
+              .bandwidth(22)
+              .x(function(d) { return x(d.x);})
+              .size([width, height])
+              (data)
+            */
             const contours = d3.contours()
               .size([width, height])
               .thresholds(d3.range(extent[0], extent[1], (extent[1] - extent[0]) / thresholds));
             const contoursData = contours(data);
             const projection = d3.geoIdentity()
-              .fitSize([300, 300], contoursData[0]);
+              .fitSize([size.x, size.y], contoursData[0]);
             const path = d3.geoPath()
               .projection(projection);
             svg
@@ -72,7 +104,7 @@
               .data(contoursData)
               .enter()
               .append("path")
-              .attr("d", d3.geoPath())
+              .attr("d", path)
               .attr("fill", "none")
               .attr("stroke", "#69b3a2")
               .attr("stroke-linejoin", "round")
