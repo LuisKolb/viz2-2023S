@@ -12,7 +12,6 @@
     <div id="chart"></div>
 
     <script>
-
       // set the dimensions and margins of the graph
       var margin = {top: 20, right: 30, bottom: 30, left: 40},
           width = 350 - margin.left - margin.right,
@@ -26,20 +25,22 @@
         .append("g")
           .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
-      
-      
-      
+
       // read data
-      var fileNames = ['grid_1d.txt', 'sub_grid_prob_0.txt'];
+      var fileNames = ['grid_classes_probability.txt'] //['grid_1d.txt', 'sub_grid_prob_0.txt'];
       var filePaths = fileNames.map(fileName => 'resources/' + fileName);
 
       const promises = filePaths.map(filePath =>
         fetch(filePath)
           .then(response => response.text())
           .then(data => {
-            const lines = data.trim().split('\n');
-            const numbers = lines.map(line => parseFloat(line));
-            return numbers;
+            let lines = data.trim().split('\n');
+            lines = lines.map(line => line.split(' '));
+            lines = lines.map(line => {
+              return line.map(point => parseFloat(point))
+            })
+            console.log(lines)
+            return lines;
           })
           .catch(error => console.error(`Error reading ${filePath}:`, error))
       );
@@ -47,12 +48,12 @@
       Promise.all(promises)
           .then(results => {
             var grid_1d = results[0];
-            console.log("grid_1d.txt: ");
-            console.log(grid_1d);
+            // console.log("grid_1d.txt: ");
+            // console.log(grid_1d);
 
             var sub_grid_prob_0 = results[1];
-            console.log("sub_grid_prob_0.txt: ");
-            console.log(sub_grid_prob_0);
+            // console.log("sub_grid_prob_0.txt: ");
+            // console.log(sub_grid_prob_0);
 
             // size of the plot
             var size = {

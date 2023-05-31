@@ -1,7 +1,20 @@
 # viz2-2023S
 
-start server using python:
-open terminal in src folder 
-type `python -m http.server`
+## install the virtual environment
 
-visit http://localhost:8000/
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+## start the webserver
+
+start server using python:
+
+```bash
+cd src
+python -m http.server
+```
+
+by default the site is served on: <http://localhost:8000/>
