@@ -66,9 +66,7 @@
         .append("g")
           .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
-      
-      
-      
+
       // read data
       var fileNames = ['grid_1d.txt', 'sub_grid_prob_0.txt', 'sub_grid_prob_1.txt',
       'sub_grid_prob_2.txt', 'sub_grid_prob_3.txt', 'sub_grid_prob_4.txt', 'sub_grid_prob_5.txt', 
@@ -79,9 +77,13 @@
         fetch(filePath)
           .then(response => response.text())
           .then(data => {
-            const lines = data.trim().split('\n');
-            const numbers = lines.map(line => parseFloat(line));
-            return numbers;
+            let lines = data.trim().split('\n');
+            lines = lines.map(line => line.split(' '));
+            lines = lines.map(line => {
+              return line.map(point => parseFloat(point))
+            })
+            console.log(lines)
+            return lines;
           })
           .catch(error => console.error(`Error reading ${filePath}:`, error))
       );
