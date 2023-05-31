@@ -111,7 +111,7 @@
             const width = 100;
             const height = 100;
             const thresholds = 10;
-            const extent = d3.extent(data);
+            const extent = d3.extent(grid_1d);
             
             
             const x = d3.scaleLinear()
@@ -120,7 +120,6 @@
             const y = d3.scaleLinear()
               .domain([extent[0], extent[1]])
               .range([size.y, 0]);
-            /* Adding axis messes up contour lines
             // Add X axis
             svg.append("g")
               .attr("transform", "translate(0," + size.y + ")")
@@ -128,17 +127,27 @@
             // Add Y axis
             svg.append("g")
               .call(d3.axisLeft(y));
-            */
-            /* density data not working :/
-            const densityData = d3.contourDensity()
-              .y(function(d) { return y(d.y);})
-              .bandwidth(22)
-              .x(function(d) { return x(d.x);})
-              .size([width, height])
-              (data)
-            */
 
 
+            const contours = d3.contourDensity()
+              .x(d => x(d[0]))
+              .y(d => y(d[1]))
+              .weight( function(d, i) {return sub_grid_prob_0[i];})
+              .bandwidth(30)
+              .thresholds(30)
+            (grid_2d)
+            
+            svg.append("g")
+                .attr("fill", "none")
+                .attr("stroke", "steelblue")
+                .attr("stroke-linejoin", "round")
+              .selectAll("path")
+              .data(contours)
+              .enter().append("path")
+                .attr("storke-width", 2)
+                .attr("d", d3.geoPath());
+
+                /*
             const contours = d3.contours()
               .size([width, height])
               .thresholds(d3.range(extent[0], extent[1], (extent[1] - extent[0]) / thresholds));
@@ -157,7 +166,7 @@
               .attr("stroke", "#69b3a2")
               .attr("stroke-linejoin", "round")
 
-
+                */
 
             // Scatter plot
 
