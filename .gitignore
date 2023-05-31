@@ -130,3 +130,10 @@ dist
 .pnp.*
 
 venv
+
+# output files
+files_out/cifar-pca/*
+!files_out/cifar-pca/.gitkeep
+
+files_out/iris/*
+!files_out/iris/.gitkeep
