@@ -10,14 +10,54 @@
   <body>
     <h1>D3.js Contour Plot Example</h1>
     <div id="chart"></div>
+    <div id="scatter"></div>
 
     <script>
+      
+      // reshapes a 1d array flattend by numpy.ravel() to its former shape
+      function reshape2d(rows, columns, data1d){
+        var reshapedData = [];
+        var column1 = []
+        var column2 = []
+        for(let i=0; i < rows; i++){
+          column1.push(data1d[i]);
+        }
+        for(let i=rows; i < 2*rows; i++){
+          column2.push(data1d[i]);
+        }
 
+        for (let i=0; i < rows; i++){
+          reshapedData.push([column1[i], column2[i]]);
+        }
+        return reshapedData;
+      }
+
+      // returns the alpha part of a hex code given the tranparency 
+      function hexAlpha(transparency){
+        return Math.round(transparency * 255 / 100).toString(16).padStart(2, '0');
+      }
+
+      // returns a hex code representing red and transparance regarding probability
+      function prob(propability){
+        return "#FF0000" + hexAlpha(100.0*propability);
+      }
+      
       // set the dimensions and margins of the graph
       var margin = {top: 20, right: 30, bottom: 30, left: 40},
           width = 350 - margin.left - margin.right,
           height = 350 - margin.top - margin.bottom;
       
+
+      // Scatter Plot
+      var scatter_svg = d3.select("#scatter")
+        .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+      
+
       // append the svg object to the body of the page
       var svg = d3.select("#chart")
         .append("svg")
@@ -30,7 +70,9 @@
       
       
       // read data
-      var fileNames = ['grid_1d.txt', 'sub_grid_prob_0.txt'];
+      var fileNames = ['grid_1d.txt', 'sub_grid_prob_0.txt', 'sub_grid_prob_1.txt',
+      'sub_grid_prob_2.txt', 'sub_grid_prob_3.txt', 'sub_grid_prob_4.txt', 'sub_grid_prob_5.txt', 
+      'sub_grid_prob_6.txt', 'sub_grid_prob_7.txt', 'sub_grid_prob_8.txt', 'sub_grid_prob_9.txt'];
       var filePaths = fileNames.map(fileName => 'resources/' + fileName);
 
       const promises = filePaths.map(filePath =>
@@ -48,11 +90,15 @@
           .then(results => {
             var grid_1d = results[0];
             console.log("grid_1d.txt: ");
-            console.log(grid_1d);
+            // console.log(grid_1d);
+
+            var grid_2d = reshape2d(10000, 2, grid_1d);
+            console.log("grid_2d.txt: ");
+            // console.log(grid_2d);
 
             var sub_grid_prob_0 = results[1];
             console.log("sub_grid_prob_0.txt: ");
-            console.log(sub_grid_prob_0);
+            // console.log(sub_grid_prob_0);
 
             // size of the plot
             var size = {
@@ -67,14 +113,14 @@
             const thresholds = 10;
             const extent = d3.extent(data);
             
-            /* Adding axis messes up contour lines
+            
             const x = d3.scaleLinear()
               .domain([extent[0], extent[1]])
               .range([0, size.x]);
             const y = d3.scaleLinear()
               .domain([extent[0], extent[1]])
               .range([size.y, 0]);
-
+            /* Adding axis messes up contour lines
             // Add X axis
             svg.append("g")
               .attr("transform", "translate(0," + size.y + ")")
@@ -91,6 +137,8 @@
               .size([width, height])
               (data)
             */
+
+
             const contours = d3.contours()
               .size([width, height])
               .thresholds(d3.range(extent[0], extent[1], (extent[1] - extent[0]) / thresholds));
@@ -108,8 +156,41 @@
               .attr("fill", "none")
               .attr("stroke", "#69b3a2")
               .attr("stroke-linejoin", "round")
+
+
+
+            // Scatter plot
+
+            var extent_scatter_x = d3.extent(grid_2d.map(function(value, index) { return value[0];}));
+            var extent_scatter_y = d3.extent(grid_2d.map(function(value, index) { return value[1];}));
+            
+            const scale_x = d3.scaleLinear()
+              .domain([extent_scatter_x[0], extent_scatter_x[1]])
+              .range([0, size.x]);
+            const scale_y = d3.scaleLinear()
+              .domain([extent_scatter_y[0], extent_scatter_y[1]])
+              .range([size.y, 0]);
+            
+            // Axis
+            scatter_svg.append("g")
+              .attr("transform", "translate(0," + size.y+")")
+              .call(d3.axisBottom(scale_x))
+
+            scatter_svg.append("g")
+              .call(d3.axisLeft(scale_y))
+
+            scatter_svg
+              .selectAll("circle")
+              .data(grid_2d)
+              .enter()
+              .append("circle")
+              .attr("r", 1)
+              .attr("fill", function(d, i) {return prob(sub_grid_prob_0[i])})
+              .attr("cx", function(d, i) {return scale_x(d[0])})
+              .attr("cy", function(d, i) {return scale_y(d[1])});
+
           
-          })
+          }) // end of promises
 
 
       /*
