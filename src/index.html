@@ -11,11 +11,11 @@
 
     <label for="dataset_selector">select a dataset</label>
     <select name="dataset" id="dataset_selector" onchange="updateDataset()">
-      <option value="grid_classes_probability_0_3.txt" selected>
-        grid_classes_probability_0_3
+      <option value="iris/petal length (cm)_vs_petal width (cm).txt" selected>
+        iris/petal length (cm)_vs_petal width (cm)
       </option>
-      <option value="grid_classes_probability_1_2.txt">
-        grid_classes_probability_1_2
+      <option value="iris/sepal length (cm)_vs_petal length (cm).txt">
+        iris/sepal length (cm)_vs_petal length (cm)
       </option>
     </select>
 
@@ -70,12 +70,15 @@
         var fileNames = [fname];
         var filePaths = fileNames.map((fileName) => "resources/" + fileName);
 
+        var header = null
+
         const promises = filePaths.map((filePath) =>
           fetch(filePath)
             .then((response) => response.text())
             .then((data) => {
               let lines = data.trim().split("\n");
-              lines = lines.map((line) => line.split(" "));
+              header = lines.slice(0,1)
+              lines = lines.slice(1).map((line) => line.split(",")); // slice(1) to skip the header
               lines = lines.map((line) => {
                 return line.map((point) => parseFloat(point));
               });
@@ -87,6 +90,11 @@
         );
 
         Promise.all(promises).then((results) => {
+
+          // we can log the header here, how to make it into a legend?
+          // TODO: add legend
+          console.log(header)
+
           // parse the array returned by the file reader
           // results has shape [ [Array(5),Array(5),...], [Array(5),Array(5),...], ] as it contains data from ALL parsed files
 
