@@ -5,6 +5,7 @@
     <title>D3.js Contour Plot Example</title>
     <script src="https://d3js.org/d3.v4.js"></script>
     <script src="https://d3js.org/d3-contour.v1.min.js"></script>
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
     <h1>D3.js Contour Plot Example</h1>
@@ -52,8 +53,8 @@
 
       // size of the plot
       var size = {
-        x: 500 - margin.left - margin.right,
-        y: 500 - margin.top - margin.bottom,
+        x: 400 - margin.left - margin.right,
+        y: 400 - margin.top - margin.bottom,
       };
 
       // Scatter Plot
@@ -129,7 +130,8 @@
             y: 100,
           };
 
-          const thresholds = 15;
+          let thresholds = 15;
+          // thresholds = [2, 3, 4, 5, 6, 7, 8, 9, 10];
           const bandwidth = 30;
           const extent_x = d3.extent(
             grid_2d.map(function (value, index) {
@@ -166,6 +168,9 @@
 
           // contours data generation
           var colorList = ["steelblue", "red", "lightgreen"];
+          var transparency = "55"
+          // red, blue green, orange, pink, lightblue
+          var colorCodes = ["#e31111"+transparency, "#1153e3"+transparency, "#11e32f"+transparency, "#e39a11"+transparency, "#d311e3"+transparency, "#1172e3"+transparency];
           for (j = 0; j < probabilities.length; j++) {
             let contours = d3
               .contourDensity()
@@ -175,7 +180,8 @@
                 return probabilities[j][i];
               })
               .bandwidth(bandwidth)
-              .thresholds(thresholds)(grid_2d);
+              .thresholds(thresholds)
+              (grid_2d);
 
             const projection = d3
               .geoIdentity()
@@ -185,15 +191,17 @@
             contour_svg
               .append("g")
               .attr("fill", "none")
-              .attr("stroke", colorList[j])
+              .attr("stroke",  d => colorCodes[j])
               .attr("stroke-linejoin", "round")
               .selectAll("path")
               .data(contours)
               .enter()
               .append("path")
+              // .attr("mix-blend-mode", "multiply") not yet working, currently working with stylesheet
               .attr("stroke-width", 1)
               .attr("d", path)
-              .attr("data-prob", (d) => d.value);
+              .attr("data-prob", (d) => d.value)
+                .attr("fill", d => colorCodes[j])
           }
 
           // TODO
