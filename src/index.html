@@ -17,6 +17,18 @@
       <option value="iris/sepal length (cm)_vs_petal length (cm).txt">
         iris/sepal length (cm)_vs_petal length (cm)
       </option>
+      <option value="iris/sepal length (cm)_vs_petal width (cm).txt">
+        iris/sepal length (cm)_vs_petal width (cm)
+      </option>
+      <option value="iris/sepal length (cm)_vs_sepal width (cm).txt">
+        iris/sepal length (cm)_vs_sepal width (cm)
+      </option>
+      <option value="iris/sepal width (cm)_vs_petal length (cm).txt">
+        iris/sepal width (cm)_vs_petal length (cm)
+      </option>
+      <option value="iris/sepal width (cm)_vs_petal width (cm).txt">
+        iris/sepal width (cm)_vs_petal width (cm)
+      </option>
     </select>
 
     <div id="chart"></div>
@@ -70,14 +82,14 @@
         var fileNames = [fname];
         var filePaths = fileNames.map((fileName) => "resources/" + fileName);
 
-        var header = null
+        var header = null;
 
         const promises = filePaths.map((filePath) =>
           fetch(filePath)
             .then((response) => response.text())
             .then((data) => {
               let lines = data.trim().split("\n");
-              header = lines.slice(0,1)
+              header = lines.slice(0, 1);
               lines = lines.slice(1).map((line) => line.split(",")); // slice(1) to skip the header
               lines = lines.map((line) => {
                 return line.map((point) => parseFloat(point));
@@ -90,10 +102,9 @@
         );
 
         Promise.all(promises).then((results) => {
-
           // we can log the header here, how to make it into a legend?
           // TODO: add legend
-          console.log(header)
+          console.log(header);
 
           // parse the array returned by the file reader
           // results has shape [ [Array(5),Array(5),...], [Array(5),Array(5),...], ] as it contains data from ALL parsed files
