@@ -192,8 +192,15 @@
               .enter()
               .append("path")
               .attr("stroke-width", 1)
-              .attr("d", path);
+              .attr("d", path)
+              .attr("data-prob", (d) => d.value);
           }
+
+          // TODO
+
+          // list of svg > g.stroke > path elements
+          // order by size of elem.data-prob, ascending
+          // loop: set z-index; z-index++
 
           // Scatter plot
           // Axis
