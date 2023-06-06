@@ -48,6 +48,26 @@
         return "#FF0000" + hexAlpha(100.0 * propability);
       }
 
+      // sorts the given domElements by its values in ascending or descending order in place
+      function dom_sort(order, domElements){
+        if(order === "ascending"){
+          console.log("sort dom elements in ascending order");
+          domElements.sort((a, b) => {
+            const probA = a.value;
+            const probB = b.value;
+            return probA - probB;
+          });
+        }
+        else{
+          console.log("sort dom elements in descending order");
+          domElements.sort((a, b) => {
+            const probA = a.value;
+            const probB = b.value;
+            return probB - probA;
+          });
+        }
+      }
+
       // set the dimensions and margins of the graph
       var margin = { top: 20, right: 30, bottom: 30, left: 40 };
 
@@ -132,7 +152,7 @@
 
           let thresholds = 15;
           // thresholds = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-          const bandwidth = 30;
+          const bandwidth = 55;
           const extent_x = d3.extent(
             grid_2d.map(function (value, index) {
               return value[0];
@@ -164,14 +184,23 @@
             .attr("transform", "translate(0," + size.y + ")")
             .call(d3.axisBottom(scale_x));
           // Add Y axis
-          contour_svg.append("g").call(d3.axisLeft(scale_y));
+          contour_svg
+            .append("g").call(d3.axisLeft(scale_y));
+          
+          // group for all contours
+          contour_svg
+            .append("g")
+            .attr("id", "contour_group")
+            .attr("fill", "none")
+            .attr("stroke-linejoin", "round")
 
-          // contours data generation
           var colorList = ["steelblue", "red", "lightgreen"];
           var transparency = "55"
           // red, blue green, orange, pink, lightblue
           var colorCodes = ["#e31111"+transparency, "#1153e3"+transparency, "#11e32f"+transparency, "#e39a11"+transparency, "#d311e3"+transparency, "#1172e3"+transparency];
-          for (j = 0; j < probabilities.length; j++) {
+          
+          // contours data generation
+          for (j = 0; j < 3; j++) {
             let contours = d3
               .contourDensity()
               .x((d) => scale_x(d[0]))
@@ -188,27 +217,23 @@
               .fitSize([size.x, size.y], contours[0]);
             const path = d3.geoPath().projection(projection);
 
-            contour_svg
-              .append("g")
-              .attr("fill", "none")
-              .attr("stroke",  d => colorCodes[j])
-              .attr("stroke-linejoin", "round")
-              .selectAll("path")
+            contour_svg.select("#contour_group")
+              .selectAll("path.class"+j)
               .data(contours)
               .enter()
               .append("path")
               // .attr("mix-blend-mode", "multiply") not yet working, currently working with stylesheet
               .attr("stroke-width", 1)
+              .attr("stroke",  d => colorCodes[j])
               .attr("d", path)
               .attr("data-prob", (d) => d.value)
-                .attr("fill", d => colorCodes[j])
+              .attr("fill", d => colorCodes[j])
+              .attr("class", "class" + j + " contours")
           }
 
-          // TODO
-
-          // list of svg > g.stroke > path elements
-          // order by size of elem.data-prob, ascending
-          // loop: set z-index; z-index++
+          // sort contours by values
+          let dom_contours = d3.selectAll(".contours");
+          dom_sort("ascending", dom_contours);
 
           // Scatter plot
           // Axis
