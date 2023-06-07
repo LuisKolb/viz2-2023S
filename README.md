@@ -24,7 +24,7 @@ by default the site is served on: <http://localhost:8000/>
 - [ ] Render contours by classes - Render first all contours of one class and then all contours of another class
 - [ ] Implement line Halos
 - [x] Implement line width by threshold value
-- [ ] Implement different line styles - solid/dashed
+- [x] Implement different line styles - solid/dashed
 - [ ] Make custom threshold values - Custom threshold values so that low probabilities are cut off
 - [ ] Set contours opacity as function of line numbers - If contour opacity is hardcoded, contour peaks won't be recognized, as multiple lines will be fully opaque
 - [ ] Make all settings adjustable from outside of code - Use good default values and a revert to default button

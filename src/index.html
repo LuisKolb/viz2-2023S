@@ -233,6 +233,8 @@ function render_graph(fname) {
         max: 0.3
       };
 
+      const dash_array = "0"; // for dashes set to e.g. "5, 10, 5" for solids set to "0"
+
       /////////////////////////////////////////////////////////////////////////
       // Contours data generation /////////////////////////////////////////////
       contour_svg
@@ -298,7 +300,8 @@ function render_graph(fname) {
       /////////////////////////////////////////////////////////////////////////
       // Set contour plot attributes //////////////////////////////////////////
       dom_contours
-        .attr("stroke-width", d => scale_stroke_width(d.value));
+        .attr("stroke-width", d => scale_stroke_width(d.value))
+        .attr("stroke-dasharray", dash_array);
       
       for ( i=0; i < num_classes; i++ ){
         d3.selectAll(".contours.class"+i)
