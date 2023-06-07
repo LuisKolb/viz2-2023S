@@ -28,6 +28,8 @@ by default the site is served on: <http://localhost:8000/>
 - [ ] Make custom threshold values - Custom threshold values so that low probabilities are cut off
 - [ ] Set contours opacity as function of line numbers - If contour opacity is hardcoded, contour peaks won't be recognized, as multiple lines will be fully opaque
 - [ ] Make all settings adjustable from outside of code - Use good default values and a revert to default button
+- [ ] Generate axis labels
+- [ ] Generate Legend - A legend that also shows values of peaks and valleys
 - [ ] Find better data - Currently trained network has no peaks in certainty which results in bad contour visualization
 - [ ] Make all settings to be saved into a json
-- [ ] Make all settings to be load from a json
+- [ ] Make all settings to be loaded from a json
