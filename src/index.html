@@ -166,6 +166,7 @@ function render_graph(fname) {
       }
       // console.log("probabilities:");
       // console.log(probabilities);
+      const num_classes = probabilities.length;
 
       /////////////////////////////////////////////////////////////////////////
       // Scaling functions ////////////////////////////////////////////////////
@@ -212,23 +213,25 @@ function render_graph(fname) {
       const thresholds = 15;
       // thresholds = [2, 3, 4, 5, 6, 7, 8, 9, 10];
       const bandwidth = 55;
-      const colorList = ["steelblue", "red", "lightgreen"];
-      const transparency = "55";
       // red, blue, green, orange, pink, lightblue
-      const colorCodes_transparency = ["#e31111" + transparency,
-        "#1153e3" + transparency, "#11e32f" + transparency,
-        "#e39a11" + transparency, "#d311e3" + transparency,
-        "#1172e3" + transparency
-      ];
       const colorCodes = ["#e31111", "#1153e3", "#11e32f", "#e39a11",
         "#d311e3", "#1172e3"
       ];
+
       const stroke_width = {
         min: 1,
         max: 3
-      }
+      };
 
+      const stroke_transparency = {
+        min: 0.1,
+        max: 1.0
+      };
 
+      const fill_transparency = {
+        min: 0.05,
+        max: 0.3
+      };
 
       /////////////////////////////////////////////////////////////////////////
       // Contours data generation /////////////////////////////////////////////
@@ -240,7 +243,7 @@ function render_graph(fname) {
 
       let allContours = []; // array of all contours, is not used in plot!
       
-      for (j = 0; j < 3; j++) {
+      for (j = 0; j < num_classes; j++) {
         let contours = d3.contourDensity()
           .x((d) => scale_x(d[0]))
           .y((d) => scale_y(d[1]))
@@ -263,10 +266,8 @@ function render_graph(fname) {
           .enter()
           .append("path")
           // .attr("mix-blend-mode", "multiply") not yet working, currently working with stylesheet
-          .attr("stroke", d => colorCodes[j])
           .attr("d", path)
           .attr("data-prob", (d) => d.value)
-          .attr("fill", d => colorCodes_transparency[j])
           .attr("class", "class" + j + " contours")
 
         allContours = allContours.concat(contours);
@@ -279,8 +280,8 @@ function render_graph(fname) {
 
       /////////////////////////////////////////////////////////////////////////
       // Prepare contour plot attributes //////////////////////////////////////
-      const scale_by_threshold = function(min, max) {
-        const contour_thresh_extent = d3.extent(
+      const scale_by_threshold = function(min, max) { // returns a scaling function within the domain of
+        const contour_thresh_extent = d3.extent(      // thresholds and in the specified min/max range
           allContours.map((d) => d.value)
           );
 
@@ -291,12 +292,19 @@ function render_graph(fname) {
         };
 
       const scale_stroke_width = scale_by_threshold(stroke_width.min, stroke_width.max);
+      const scale_stroke_transparency = scale_by_threshold(stroke_transparency.min, stroke_transparency.max);
+      const scale_transparency = scale_by_threshold(fill_transparency.min, fill_transparency.max);
 
       /////////////////////////////////////////////////////////////////////////
       // Set contour plot attributes //////////////////////////////////////////
       dom_contours
         .attr("stroke-width", d => scale_stroke_width(d.value));
-
+      
+      for ( i=0; i < num_classes; i++ ){
+        d3.selectAll(".contours.class"+i)
+          .attr("fill", d => prob(colorCodes[i], scale_transparency(d.value)))
+          .attr("stroke", d => prob(colorCodes[i], scale_stroke_transparency(d.value)))
+      }
 
       /////////////////////////////////////////////////////////////////////////
       // Scatter plot /////////////////////////////////////////////////////////
