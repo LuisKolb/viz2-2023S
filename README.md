@@ -23,7 +23,7 @@ by default the site is served on: <http://localhost:8000/>
 - [x] Render contours by threshold values - Contours can be rendered in ascending or descending order, by the contours' threshold value
 - [ ] Render contours by classes - Render first all contours of one class and then all contours of another class
 - [ ] Implement line Halos
-- [ ] Implement line width by threshold value
+- [x] Implement line width by threshold value
 - [ ] Implement different line styles - solid/dashed
 - [ ] Make custom threshold values - Custom threshold values so that low probabilities are cut off
 - [ ] Set contours opacity as function of line numbers - If contour opacity is hardcoded, contour peaks won't be recognized, as multiple lines will be fully opaque
