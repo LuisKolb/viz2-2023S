@@ -33,6 +33,17 @@
     </select>
 
     <div id="chart"></div>
+    <defs>
+			<filter id="glow">
+				<fegaussianblur class="blur" result="coloredBlur" stddeviation="4"></fegaussianblur>
+				<femerge>
+					<femergenode in="coloredBlur"></femergenode>
+          <femergenode in="coloredBlur"></femergenode>
+          <femergenode in="coloredBlur"></femergenode>
+					<femergenode in="SourceGraphic"></femergenode>
+				</femerge>
+			</filter>
+		</defs>
     <div id="scatter"></div>
 
     <script>
@@ -52,7 +63,7 @@ function hexAlpha(transparency) {
     .padStart(2, "0");
 }
 
-// Returns a hex code representing red and transparance regarding probability (probability between [0,1])
+// returns a hexcode with alpha channel 
 function prob(hexCode, propability) {
   return hexCode + hexAlpha(100.0 * propability);
 }
@@ -93,6 +104,7 @@ var size = {
   y: 400 - margin.top - margin.bottom,
 };
 
+
 // Scatter Plot
 var scatter_svg = d3
   .select("#scatter")
@@ -102,6 +114,9 @@ var scatter_svg = d3
   .append("g")
   .attr("transform", "translate(" + margin.left + "," + margin.top +
     ")");
+
+const filter_defs = 
+'<filter id="glow"><fegaussianblur class="blur" result="coloredBlur" stddeviation="4"></fegaussianblur><femerge><femergenode in="coloredBlur"></femergenode><femergenode in="coloredBlur"></femergenode><femergenode in="coloredBlur"></femergenode><femergenode in="SourceGraphic"></femergenode></femerge></filter>';
 
 // append the svg object to the body of the page
 var contour_svg = d3
@@ -228,6 +243,15 @@ function render_graph(fname) {
         max: 1.0
       };
 
+      const render_halos = false;
+
+      const halo_width = {
+        min: 3,
+        max: 6
+      };
+
+      const halo_color = "#000000"
+
       const fill_transparency = {
         min: 0.05,
         max: 0.3
@@ -247,6 +271,7 @@ function render_graph(fname) {
       
       for (j = 0; j < num_classes; j++) {
         let contours = d3.contourDensity()
+          .size([size.x, size.y])
           .x((d) => scale_x(d[0]))
           .y((d) => scale_y(d[1]))
           .weight(function(d, i) {
@@ -255,30 +280,68 @@ function render_graph(fname) {
           .bandwidth(bandwidth)
           .thresholds(thresholds)
           (grid_2d);
-
+        
         const projection = d3
           .geoIdentity()
           .fitSize([size.x, size.y], contours[0]);
         const path = d3.geoPath()
           .projection(projection);
-
+        
+        // add contours to svg
         contour_svg.select("#contour_group")
           .selectAll("path.class" + j)
           .data(contours)
           .enter()
           .append("path")
-          // .attr("mix-blend-mode", "multiply") not yet working, currently working with stylesheet
           .attr("d", path)
           .attr("data-prob", (d) => d.value)
           .attr("class", "class" + j + " contours")
+        
+        if(render_halos){
+          contour_svg.select("#contour_group")
+            .selectAll("path.class" + j + " halos")
+            .data(contours)
+            .enter()
+            .append("path")
+            .attr("d", path)
+            .attr("data-prob", (d) => d.value)
+            .attr("stroke-width", halo_width.max)
+            .attr("stroke", halo_color)
+            .attr("style", "filter: url(#glow)")
+            .attr("class", "class" + j + " halos")
+        }
 
         allContours = allContours.concat(contours);
       }
 
       /////////////////////////////////////////////////////////////////////////
       // Sort contours by values //////////////////////////////////////////////
+      
+      const dom_contours_halos = d3.selectAll(".contours,.halos");      
       const dom_contours = d3.selectAll(".contours");
+      
       dom_sort("ascending", dom_contours);
+
+      /*
+      let sort_helper = Array.from(dom_contours_halos["_groups"][0]);
+      console.log(dom_contours_halos["_groups"][0]);
+      console.log(sort_helper);
+      
+      sort_helper.sort((a, b) => {
+        const valueA = a.getAttribute("data-prob");
+        const valueB = b.getAttribute("data-prob");
+        return valueA - valueB;
+      });
+      console.log(sort_helper);
+      sort_helper.forEach((v, i) => {
+        dom_contours_halos["_groups"[0].push(v)];
+      });
+      dom_contours_halos["_groups"][0] = sort_helper;
+      */
+
+
+      // console.log(sort_helper);
+      
 
       /////////////////////////////////////////////////////////////////////////
       // Prepare contour plot attributes //////////////////////////////////////
@@ -301,7 +364,9 @@ function render_graph(fname) {
       // Set contour plot attributes //////////////////////////////////////////
       dom_contours
         .attr("stroke-width", d => scale_stroke_width(d.value))
-        .attr("stroke-dasharray", dash_array);
+        .attr("stroke-dasharray", dash_array)
+        .attr("style", "mix-blend-mode: normal");
+
       
       for ( i=0; i < num_classes; i++ ){
         d3.selectAll(".contours.class"+i)
