@@ -1,1 +1,7 @@
-
+#tooltip {
+    color: white;
+    visibility: hidden;
+    z-index: 9999;
+    background: transparent;
+    position: absolute;
+}

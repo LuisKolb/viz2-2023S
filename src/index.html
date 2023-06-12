@@ -5,7 +5,18 @@
     <title>D3.js Contour Plot Example</title>
     <script src="https://d3js.org/d3.v4.js"></script>
     <script src="https://d3js.org/d3-contour.v1.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <style>
+      #tooltip {
+        color: white;
+        visibility: hidden;
+        z-index: 9999;
+        background: rgba(0, 0, 0, 0.5);
+        position: absolute;
+        border-radius: 25px;
+        padding: 10px;
+      }
+    </style>
+    <!-- <link rel="stylesheet" href="style.css"> -->
   </head>
   <body>
     <h1>D3.js Contour Plot Example</h1>
@@ -76,6 +87,8 @@
 		</defs>
     <div id="scatter"></div>
 
+    <div id="tooltip"></div>
+
     <script>
 /////////////////////////////////////////////////////////////////////////
 // Helper functions /////////////////////////////////////////////////////
@@ -119,6 +132,25 @@ function dom_sort(order, domElements) {
     });
   }
 }
+
+function findClosest (x, arr) {
+  var indexArr = arr.map(function(k) { return Math.abs(k - x) })
+  var min = Math.min.apply(Math, indexArr)
+  return indexArr.indexOf(min)
+}
+
+function getProbsFromMousePos(node, arr, scale_x, scale_y) {
+  let mc = d3.mouse(node)
+
+  let results_x = arr.map((v,i) => {return v[0]})
+  let closest_x_idx = findClosest(scale_x.invert(mc[0]), results_x)
+
+  let results_y = arr.map((v,i) => {return (results_x[closest_x_idx] == v[0]) ? v[1] : null})
+  let closest_y_idx = findClosest(scale_y.invert(mc[1]), results_y)
+
+  // TODO: colorcode?
+  return arr[closest_x_idx,closest_y_idx].slice(2).map((num) => num.toFixed(2))
+} 
 
 /////////////////////////////////////////////////////////////////////////
 // Prepare Canvas ///////////////////////////////////////////////////////
@@ -357,7 +389,7 @@ function render_graph() {
 
       /////////////////////////////////////////////////////////////////////////
       // Contours data generation /////////////////////////////////////////////
-      contour_svg
+      var contour_group = contour_svg
         .append("g")
         .attr("id", "contour_group")
         .attr("fill", "none")
@@ -383,6 +415,8 @@ function render_graph() {
         const path = d3.geoPath()
           .projection(projection);
         
+        var tooltip = d3.select("#tooltip")
+        
         // add contours to svg
         contour_svg.select("#contour_group")
           .selectAll("path.class" + j)
@@ -390,8 +424,19 @@ function render_graph() {
           .enter()
           .append("path")
           .attr("d", path)
-          .attr("data-prob", (d) => d.value)
+          .attr("data-prob", (d,idx) => {return contours[idx].value}) // TODO: equivalent to d.value, but this is NOT what we want! (is the threshold, not the probability)
           .attr("class", "class" + j + " contours")
+          .on("mouseover", (d,idx) => {
+            tooltip.text(getProbsFromMousePos(contour_group.node(), results, scale_x, scale_y))
+              .style("visibility", "visible")
+          })
+          .on("mousemove", () => {
+            tooltip.text(getProbsFromMousePos(contour_group.node(), results, scale_x, scale_y))
+              .style("top", (d3.event.pageY-10)+"px")
+              .style("left",(d3.event.pageX+10)+"px")
+          })
+          .on("mouseout", () => {return tooltip.style("visibility", "hidden");})
+          
         
         if(render_halos){
           contour_svg.select("#contour_group")
@@ -473,6 +518,8 @@ function render_graph() {
           .attr("stroke", d => prob(colorCodes[i], scale_stroke_transparency(d.value)))
       }
 
+
+
       /////////////////////////////////////////////////////////////////////////
       // Scatter plot /////////////////////////////////////////////////////////
       scatter_svg
@@ -502,11 +549,11 @@ function render_graph() {
       
       /////////////////////////////////////////////////////////////////////////
       // END //////////////////////////////////////////////////////////////////
-
     }); // end of promises
 } // end of render_graph()
 
 updateDataset();
+
     </script>
   </body>
 </html>
