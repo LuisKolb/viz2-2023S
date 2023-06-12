@@ -92,16 +92,16 @@ function dom_sort(order, domElements) {
 
 // set the dimensions and margins of the graph
 var margin = {
-  top: 20,
-  right: 30,
-  bottom: 50,
-  left: 60
+  top: 50,
+  right: 80,
+  bottom: 80,
+  left: 90
 };
 
 // size of the plot
 var size = {
-  x: 400 - margin.left - margin.right,
-  y: 400 - margin.top - margin.bottom,
+  x: 800 - margin.left - margin.right,
+  y: 800 - margin.top - margin.bottom,
 };
 
 
@@ -159,10 +159,9 @@ function render_graph(fname) {
 
   Promise.all(promises)
     .then((results) => {
-      // we can log the header here, how to make it into a legend?
-      // TODO: add legend
-      header = header.toString().replace(/(\r\n|\n|\r)/gm, "").split(","); // cast line to string, remove next lines, split them into an array
-      console.log(header);
+      // cast line to string, remove next lines, split them into an array, uppercase first letters
+      header = header.toString().replace(/(\r\n|\n|\r)/gm, "").split(","); 
+      header.forEach((d, i) => header[i] = d.charAt(0).toUpperCase() + d.slice(1));
       
 
       // parse the array returned by the file reader
@@ -181,12 +180,19 @@ function render_graph(fname) {
       for (i = 2; i < results[0].length; i++) {
         probabilities.push(results.map((line) => line[i]));
       }
+      // console.log(probabilities);
+  
+
       // console.log("probabilities:");
       // console.log(probabilities);
       const num_classes = probabilities.length;
 
       /////////////////////////////////////////////////////////////////////////
       // Scaling functions ////////////////////////////////////////////////////
+      const extent_p = d3.extent(
+        probabilities.flat()
+      );
+
       const extent_x = d3.extent(
         grid_2d.map(function(value, index) {
           return value[0];
@@ -231,30 +237,55 @@ function render_graph(fname) {
         .attr("class", "x label")
         .attr("text-anchor", "end")
         .attr("x", size.x)
-        .attr("y", size.y + margin.bottom - 10)
+        .attr("y", size.y + 40)
         .text(header[0]);
 
       contour_svg.append("text")
         .attr("class", "y label")
         .attr("text-anchor", "end")
-        .attr("y", -margin.left + 10)
+        .attr("y", -40)
         .attr("dy", ".75em")
         .attr("transform", "rotate(-90)")
         .text(header[1]);
 
       /////////////////////////////////////////////////////////////////////////
-      // Contour generation parameter /////////////////////////////////////////
-      const thresholds = 15;
-      // thresholds = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-      const bandwidth = 55;
+      // Legend ///////////////////////////////////////////////////////////////
       // red, blue, green, orange, pink, lightblue
       const colorCodes = ["#e31111", "#1153e3", "#11e32f", "#e39a11",
         "#d311e3", "#1172e3"
       ];
+      const legend_labels = header.slice(2);
+      contour_svg.selectAll("legends_dots")
+        .data(legend_labels)
+        .enter()
+        .append("circle")
+          .attr("cx", size.x)
+          .attr("cy", (d,i)=> 100 + i * 25)
+          .attr("r", 7)
+          .style("fill", (d, i) => colorCodes[i]);
+
+      contour_svg.selectAll("legend_labels")
+        .data(legend_labels)
+        .enter()
+        .append("text")
+          .attr("x", size.x + 10)
+          .attr("y", (d, i) => 100 + i * 25)
+          .style("fill", "black")
+          .text((d) => d)
+          .attr("text-anchor", "left")
+          .style("alignment-baseline", "middle");
+
+      /////////////////////////////////////////////////////////////////////////
+      // Contour generation parameter /////////////////////////////////////////
+      let thresholds = 10;
+      // thresholds can be added as array, but they have to be insanely small, for whatever reason...
+      // thresholds = [0.00001, 0.0001, 0.0004, 0.0008, 0.001, 0.005, 0.008];
+
+      const bandwidth = 55;
 
       const stroke_width = {
-        min: 1,
-        max: 3
+        min: 1.5,
+        max: 4.5
       };
 
       const stroke_transparency = {
@@ -272,11 +303,13 @@ function render_graph(fname) {
       const halo_color = "#000000"
 
       const fill_transparency = {
-        min: 0.05,
-        max: 0.3
+        min: 0.1,
+        max: 0.5
       };
 
       const dash_array = "0"; // for dashes set to e.g. "5, 10, 5" for solids set to "0"
+
+      const order_contours_by_threshold = true;
 
       /////////////////////////////////////////////////////////////////////////
       // Contours data generation /////////////////////////////////////////////
@@ -339,7 +372,10 @@ function render_graph(fname) {
       const dom_contours_halos = d3.selectAll(".contours,.halos");      
       const dom_contours = d3.selectAll(".contours");
       
-      dom_sort("ascending", dom_contours);
+      if(order_contours_by_threshold){
+        dom_sort("ascending", dom_contours);
+      }
+      
 
       /*
       let sort_helper = Array.from(dom_contours_halos["_groups"][0]);
