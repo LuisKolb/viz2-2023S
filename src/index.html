@@ -94,8 +94,8 @@ function dom_sort(order, domElements) {
 var margin = {
   top: 20,
   right: 30,
-  bottom: 30,
-  left: 40
+  bottom: 50,
+  left: 60
 };
 
 // size of the plot
@@ -161,7 +161,9 @@ function render_graph(fname) {
     .then((results) => {
       // we can log the header here, how to make it into a legend?
       // TODO: add legend
+      header = header.toString().replace(/(\r\n|\n|\r)/gm, "").split(","); // cast line to string, remove next lines, split them into an array
       console.log(header);
+      
 
       // parse the array returned by the file reader
       // results has shape [ [Array(5),Array(5),...], [Array(5),Array(5),...], ] as it contains data from ALL parsed files
@@ -222,6 +224,23 @@ function render_graph(fname) {
       contour_svg
         .append("g")
         .call(d3.axisLeft(scale_y));
+
+      /////////////////////////////////////////////////////////////////////////
+      // Axis labels //////////////////////////////////////////////////////////
+      contour_svg.append("text")
+        .attr("class", "x label")
+        .attr("text-anchor", "end")
+        .attr("x", size.x)
+        .attr("y", size.y + margin.bottom - 10)
+        .text(header[0]);
+
+      contour_svg.append("text")
+        .attr("class", "y label")
+        .attr("text-anchor", "end")
+        .attr("y", -margin.left + 10)
+        .attr("dy", ".75em")
+        .attr("transform", "rotate(-90)")
+        .text(header[1]);
 
       /////////////////////////////////////////////////////////////////////////
       // Contour generation parameter /////////////////////////////////////////
