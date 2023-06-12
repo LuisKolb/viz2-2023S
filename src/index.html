@@ -32,6 +32,21 @@
       </option>
     </select>
 
+    <br>
+
+    <label for="weight">show only above confidence:</label>
+    <span>0.0</span>
+    <input type="range" id="cutoff" min="0" value="0.3" max="0.9" step="0.3" list="cutoff_ticks" oninput="updateOptions()">
+    <span>0.9</span>
+    <datalist id="cutoff_ticks">
+      <option>0.0</option>
+      <option>0.3</option>
+      <option>0.6</option>
+      <option>0.9</option>
+    </datalist>
+  
+    <div class="optionSelected"></div>
+
     <div id="chart"></div>
     <defs>
 			<filter id="glow">
@@ -52,8 +67,11 @@
 
 // Renders the whole graph with new dataset
 function updateDataset() {
-  var e = document.getElementById("dataset_selector");
-  render_graph(e.value);
+  render_graph();
+}
+
+function updateOptions() {
+  render_graph();
 }
 
 // Returns the alpha part of a hex code given the tranparency
@@ -128,9 +146,14 @@ var contour_svg = d3
   .attr("transform", "translate(" + margin.left + "," + margin.top +
     ")");
 
-function render_graph(fname) {
+function render_graph() {
+  /////////////////////////////////////////////////////////////////////////
+  // read options /////////////////////////////////////////////////////////
+  var cutoff = document.getElementById("cutoff").value
+
   /////////////////////////////////////////////////////////////////////////
   // read data ////////////////////////////////////////////////////////////
+  var fname = document.getElementById("dataset_selector").value;
   var fileNames = [fname];
   var filePaths = fileNames.map((fileName) => "resources/" +
   fileName);
@@ -150,6 +173,10 @@ function render_graph(fname) {
       lines = lines.map((line) => {
         return line.map((point) => parseFloat(point));
       });
+      
+      lines = lines.map((line) => {
+        return line.map((point, idx) => (((idx > 1) && (cutoff > point)) ? 0.0 : point))
+      })
       return lines;
     })
     .catch((error) =>
