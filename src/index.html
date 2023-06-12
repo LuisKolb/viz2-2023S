@@ -34,7 +34,7 @@
 
     <br>
 
-    <label for="weight">show only above confidence:</label>
+    <label for="cutoff">minimum confidence:</label>
     <span>0.0</span>
     <input type="range" id="cutoff" min="0" value="0.3" max="0.9" step="0.3" list="cutoff_ticks" oninput="updateOptions()">
     <span>0.9</span>
@@ -43,6 +43,21 @@
       <option>0.3</option>
       <option>0.6</option>
       <option>0.9</option>
+    </datalist>
+
+    <br>
+
+    <label for="threshold">contour threshold:</label>
+    <span>5</span>
+    <input type="range" id="threshold" min="5" value="10" max="30" step="5" list="threshold_ticks" oninput="updateOptions()">
+    <span>30</span>
+    <datalist id="threshold_ticks">
+      <option>5</option>
+      <option>10</option>
+      <option>15</option>
+      <option>20</option>
+      <option>25</option>
+      <option>30</option>
     </datalist>
   
     <div class="optionSelected"></div>
@@ -150,6 +165,8 @@ function render_graph() {
   /////////////////////////////////////////////////////////////////////////
   // read options /////////////////////////////////////////////////////////
   var cutoff = document.getElementById("cutoff").value
+  var threshold = document.getElementById("threshold").value
+
 
   /////////////////////////////////////////////////////////////////////////
   // read data ////////////////////////////////////////////////////////////
@@ -304,7 +321,7 @@ function render_graph() {
 
       /////////////////////////////////////////////////////////////////////////
       // Contour generation parameter /////////////////////////////////////////
-      let thresholds = 10;
+      let thresholds = threshold;
       // thresholds can be added as array, but they have to be insanely small, for whatever reason...
       // thresholds = [0.00001, 0.0001, 0.0004, 0.0008, 0.001, 0.005, 0.008];
 
