@@ -137,3 +137,6 @@ files_out/cifar-pca/*
 
 files_out/iris/*
 !files_out/iris/.gitkeep
+
+files_out/penguins/*
+!files_out/penguins/.gitkeep
