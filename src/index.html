@@ -47,7 +47,7 @@
 
     <label for="cutoff">minimum confidence:</label>
     <span>0.0</span>
-    <input type="range" id="cutoff" min="0" value="0.3" max="0.9" step="0.3" list="cutoff_ticks" oninput="updateOptions()">
+    <input type="range" id="cutoff" min="0" value="0.3" max="0.9" step="0.1" list="cutoff_ticks" oninput="updateOptions()">
     <span>0.9</span>
     <datalist id="cutoff_ticks">
       <option>0.0</option>
@@ -60,7 +60,7 @@
 
     <label for="threshold">contour threshold:</label>
     <span>5</span>
-    <input type="range" id="threshold" min="5" value="10" max="30" step="5" list="threshold_ticks" oninput="updateOptions()">
+    <input type="range" id="threshold" min="5" value="10" max="30" step="1" list="threshold_ticks" oninput="updateOptions()">
     <span>30</span>
     <datalist id="threshold_ticks">
       <option>5</option>
@@ -70,8 +70,11 @@
       <option>25</option>
       <option>30</option>
     </datalist>
-  
-    <div class="optionSelected"></div>
+
+    <br>
+
+    <textarea name="settings_output" id="settings_output" cols="30" rows="10"></textarea>
+    <button id="import_settings" onclick="applyJSONSettings()">apply settings from textarea</button>
 
     <div id="chart"></div>
     <defs>
@@ -85,7 +88,7 @@
 				</femerge>
 			</filter>
 		</defs>
-    <div id="scatter"></div>
+    <!-- <div id="scatter"></div> -->
 
     <div id="tooltip"></div>
 
@@ -100,6 +103,16 @@ function updateDataset() {
 
 function updateOptions() {
   render_graph();
+}
+
+function applyJSONSettings() {
+  var jsonSettings = document.getElementById('settings_output').value;
+  var settings = JSON.parse(jsonSettings);
+
+  document.getElementById("cutoff").value = settings.cutoff
+  document.getElementById("threshold").value = settings.threshold
+
+  render_graph()
 }
 
 // Returns the alpha part of a hex code given the tranparency
@@ -198,6 +211,13 @@ function render_graph() {
   // read options /////////////////////////////////////////////////////////
   var cutoff = document.getElementById("cutoff").value
   var threshold = document.getElementById("threshold").value
+  var settings = {
+    cutoff: cutoff,
+    threshold: threshold,
+  };
+  var jsonSettings = JSON.stringify(settings, null, 2);
+
+  document.getElementById("settings_output").value = jsonSettings
 
 
   /////////////////////////////////////////////////////////////////////////
