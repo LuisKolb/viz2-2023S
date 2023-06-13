@@ -74,19 +74,6 @@
     <div class="optionSelected"></div>
 
     <div id="chart"></div>
-    <defs>
-			<filter id="glow">
-				<fegaussianblur class="blur" result="coloredBlur" stddeviation="4"></fegaussianblur>
-				<femerge>
-					<femergenode in="coloredBlur"></femergenode>
-          <femergenode in="coloredBlur"></femergenode>
-          <femergenode in="coloredBlur"></femergenode>
-					<femergenode in="SourceGraphic"></femergenode>
-				</femerge>
-			</filter>
-		</defs>
-    <div id="scatter"></div>
-
     <div id="tooltip"></div>
 
     <script>
@@ -112,25 +99,6 @@ function hexAlpha(transparency) {
 // returns a hexcode with alpha channel 
 function prob(hexCode, propability) {
   return hexCode + hexAlpha(100.0 * propability);
-}
-
-// Sorts the given domElements by its values in ascending or descending order in place
-function dom_sort(order, domElements) {
-  if (order === "ascending") {
-    console.log("sort dom elements in ascending order");
-    domElements.sort((a, b) => {
-      const probA = a.value;
-      const probB = b.value;
-      return probA - probB;
-    });
-  } else {
-    console.log("sort dom elements in descending order");
-    domElements.sort((a, b) => {
-      const probA = a.value;
-      const probB = b.value;
-      return probB - probA;
-    });
-  }
 }
 
 function findClosest (x, arr) {
@@ -169,19 +137,10 @@ var size = {
   y: 800 - margin.top - margin.bottom,
 };
 
-
-// Scatter Plot
-var scatter_svg = d3
-  .select("#scatter")
-  .append("svg")
-  .attr("width", size.x + margin.left + margin.right)
-  .attr("height", size.y + margin.top + margin.bottom)
-  .append("g")
-  .attr("transform", "translate(" + margin.left + "," + margin.top +
-    ")");
-
 const filter_defs = 
 '<filter id="glow"><fegaussianblur class="blur" result="coloredBlur" stddeviation="4"></fegaussianblur><femerge><femergenode in="coloredBlur"></femergenode><femergenode in="coloredBlur"></femergenode><femergenode in="coloredBlur"></femergenode><femergenode in="SourceGraphic"></femergenode></femerge></filter>';
+
+
 
 // append the svg object to the body of the page
 var contour_svg = d3
@@ -192,6 +151,7 @@ var contour_svg = d3
   .append("g")
   .attr("transform", "translate(" + margin.left + "," + margin.top +
     ")");
+
 
 function render_graph() {
   /////////////////////////////////////////////////////////////////////////
@@ -372,11 +332,11 @@ function render_graph() {
       const render_halos = false;
 
       const halo_width = {
-        min: 3,
-        max: 6
+        min: 10,
+        max: 10
       };
 
-      const halo_color = "#000000"
+      const halo_color = "#ffffffD9"
 
       const fill_transparency = {
         min: 0.1,
@@ -396,6 +356,23 @@ function render_graph() {
         .attr("stroke-linejoin", "round");
 
       let allContours = []; // array of all contours, is not used in plot!
+            
+      let filter = d3.selectAll("#contour_group").append("defs")
+        .append("filter")
+          .attr("id", "glow");
+
+        filter.append("feGaussianBlur")
+          .attr("class", "blur")
+          .attr("result", "coloredBlur")
+          .attr("stdDeviation", "4");
+
+        filter.append("feMerge")
+          .selectAll("feMergeNode")
+          .data(["coloredBlur", "coloredBlur", "coloredBlur", "SourceGraphic"])
+          .enter()
+          .append("feMergeNode")
+          .attr("in", d => d);
+
       
       for (j = 0; j < num_classes; j++) {
         let contours = d3.contourDensity()
@@ -460,32 +437,40 @@ function render_graph() {
       
       const dom_contours_halos = d3.selectAll(".contours,.halos");      
       const dom_contours = d3.selectAll(".contours");
-      
+
+      // orders contours correctly, but not completely correctly with halos
       if(order_contours_by_threshold){
-        dom_sort("ascending", dom_contours);
+        d3.selectAll(".contours,.halos").each(function(a, b) {
+          if(this.getAttribute("class").includes("contours")){
+            this.parentNode.appendChild(this);
+          }
+        });
+
+        d3.selectAll(".contours,.halos").sort((a, b) => {
+          const probA = a.value;
+          const probB = b.value;
+          return probA - probB;
+        });
       }
       
-
-      /*
+      /* Sorts halos and contours correctly, but I don't get the sorted array inside the DOM ... :/
       let sort_helper = Array.from(dom_contours_halos["_groups"][0]);
-      console.log(dom_contours_halos["_groups"][0]);
+      
       console.log(sort_helper);
       
       sort_helper.sort((a, b) => {
         const valueA = a.getAttribute("data-prob");
         const valueB = b.getAttribute("data-prob");
-        return valueA - valueB;
+        if(valueA != valueB){
+          return valueA - valueB;  
+        }
+        const classA = a.getAttribute("class");
+        const classB = b.getAttribute("class");
+        return -classA.localeCompare(classB); // does a lexical compare between e.g. "class1 contours" and "class0 halos"
       });
+
       console.log(sort_helper);
-      sort_helper.forEach((v, i) => {
-        dom_contours_halos["_groups"[0].push(v)];
-      });
-      dom_contours_halos["_groups"][0] = sort_helper;
       */
-
-
-      // console.log(sort_helper);
-      
 
       /////////////////////////////////////////////////////////////////////////
       // Prepare contour plot attributes //////////////////////////////////////
@@ -509,7 +494,7 @@ function render_graph() {
       dom_contours
         .attr("stroke-width", d => scale_stroke_width(d.value))
         .attr("stroke-dasharray", dash_array)
-        .attr("style", "mix-blend-mode: normal");
+        .attr("style", "mix-blend-mode: normal;");
 
       
       for ( i=0; i < num_classes; i++ ){
@@ -518,35 +503,6 @@ function render_graph() {
           .attr("stroke", d => prob(colorCodes[i], scale_stroke_transparency(d.value)))
       }
 
-
-
-      /////////////////////////////////////////////////////////////////////////
-      // Scatter plot /////////////////////////////////////////////////////////
-      scatter_svg
-        .append("g")
-        .attr("transform", "translate(0," + size.y + ")")
-        .call(d3.axisBottom(scale_x));
-
-      scatter_svg.append("g")
-        .call(d3.axisLeft(scale_y));
-
-      scatter_svg
-        .selectAll("circle")
-        .data(grid_2d)
-        .enter()
-        .append("circle")
-        .attr("r", 1)
-        .attr("fill", function(d, i) {
-          return prob("#e31111", probabilities[2][i]);
-        })
-        .attr("cx", function(d, i) {
-          return scale_x(d[0]);
-        })
-        .attr("cy", function(d, i) {
-          return scale_y(d[1]);
-        });
-    
-      
       /////////////////////////////////////////////////////////////////////////
       // END //////////////////////////////////////////////////////////////////
     }); // end of promises
