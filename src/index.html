@@ -4,8 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>D3.js Contour Plot Example</title>
-    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://d3js.org/d3-contour.v1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-selection@3"></script>
+    <script>const div = d3.selectAll("div");</script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <style>
       #tooltip {
@@ -72,7 +74,7 @@
 
               <br>
               <div class="form-group row">
-                <label for="cutoff" class="col-sm-4 col-form-label">minimum confidence:</label>
+                <label for="cutoff" class="col-sm-6 col-form-label">minimum confidence:</label>
                 <div class="col-sm-10">
                   <input type="range" class="form-control" id="cutoff" min="0" value="0.3" max="0.9" step="0.1" list="cutoff_ticks" oninput="updateOptions()">
                   <span style="margin-right: 75%;">0.0</span>
@@ -114,13 +116,13 @@
               <div class="form-group row" title="Min and max values of the stroke width.">
                 <label for="line_color" class="col-sm-5 col-form-label">Line width</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="line_width" value="2, 5" oninput="updateOptions()">
+                  <input type="text" class="form-control" id="line_width" value="2, 7" oninput="updateOptions()">
                 </div>
               </div>
               <div class="form-group row" title="Min and max values of the stroke opacity.">
                 <label for="line_opacity" class="col-sm-5 col-form-label">Line opacity</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="line_opacity" value="0.1, 0.4" oninput="updateOptions()">
+                  <input type="text" class="form-control" id="line_opacity" value="0.7, 1" oninput="updateOptions()">
                 </div>
               </div>
               <div class="form-group row" >
@@ -211,9 +213,8 @@ function findClosest (x, arr) {
   return indexArr.indexOf(min)
 }
 
-function getProbsFromMousePos(node, arr, scale_x, scale_y) {
-  let mc = d3.mouse(node)
-
+function getProbsFromMousePos(event, node, arr, scale_x, scale_y) {
+  mc = d3.pointer(event, node);
   let results_x = arr.map((v,i) => {return v[0]})
   let closest_x_idx = findClosest(scale_x.invert(mc[0]), results_x)
 
@@ -322,7 +323,6 @@ function render_graph() {
   fill_transparency.min = doc_fill_opacity[0];
   fill_transparency.max = doc_fill_opacity[1];
   color_blending = document.getElementById("color_blending").value;
-  console.log(color_blending);
 
   var settings = {
     "colors": colorCodes,
@@ -552,14 +552,16 @@ function render_graph() {
           .attr("d", path)
           .attr("data-prob", (d,idx) => {return contours[idx].value}) // TODO: equivalent to d.value, but this is NOT what we want! (is the threshold, not the probability)
           .attr("class", "class" + j + " contours")
-          .on("mouseover", (d,idx) => {
-            tooltip.text(getProbsFromMousePos(contour_group.node(), results, scale_x, scale_y))
+          .on("mouseover", (event) => {
+            tooltip.text(getProbsFromMousePos(event, contour_group.node(), results, scale_x, scale_y))
               .style("visibility", "visible")
           })
-          .on("mousemove", () => {
-            tooltip.text(getProbsFromMousePos(contour_group.node(), results, scale_x, scale_y))
-              .style("top", (d3.event.pageY-10)+"px")
-              .style("left",(d3.event.pageX+10)+"px")
+          .on("mousemove", (event) => {
+            tooltip.text(getProbsFromMousePos(event, contour_group.node(), results, scale_x, scale_y))
+              .style("top", (event.pageY-10)+"px")
+              .style("left",(event.pageX+10)+"px")
+              .style("stroke", "#000000ee")
+
           })
           .on("mouseout", () => {return tooltip.style("visibility", "hidden");})
           
@@ -651,6 +653,8 @@ function render_graph() {
           .attr("fill", d => prob(colorCodes[i], scale_transparency(d.value)))
           .attr("stroke", d => prob(colorCodes[i], scale_stroke_transparency(d.value)))
       }
+
+      // console.log(d3.selectAll(".contours,.halos")["_groups"][0][0]);
 
       /////////////////////////////////////////////////////////////////////////
       // END //////////////////////////////////////////////////////////////////
