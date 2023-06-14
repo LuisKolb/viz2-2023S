@@ -73,8 +73,8 @@
               </div>
 
               <br>
-              <div class="form-group row">
-                <label for="cutoff" class="col-sm-6 col-form-label">minimum confidence:</label>
+              <div title="Set areas with low confidence to 0" class="form-group row">
+                <label for="cutoff" class="col-sm-6 col-form-label">Minimum confidence</label>
                 <div class="col-sm-10">
                   <input type="range" class="form-control" id="cutoff" min="0" value="0.3" max="0.9" step="0.1" list="cutoff_ticks" oninput="updateOptions()">
                   <span style="margin-right: 75%;">0.0</span>
@@ -84,6 +84,16 @@
                     <option>0.3</option>
                     <option>0.6</option>
                     <option>0.9</option>
+                  </datalist>
+                </div>
+              </div>
+              <div title="Remove contours from top to bottom" class="form-group row">
+                <label for="remove_contours" class="col-sm-6 col-form-label">Remove contours</label>
+                <div class="col-sm-10">
+                  <input type="range" class="form-control" id="remove_contours" min="0" value="0" max="10" step="1" list="cutoff_ticks" oninput="updateOptions()">
+                  <span style="margin-right: 75%;"></span>
+                  <span></span>
+                  <datalist id="remove_contours_ticks">
                   </datalist>
                 </div>
               </div>
@@ -264,7 +274,7 @@ function render_graph() {
   // thresholds can be added as array, but they have to be insanely small, for whatever reason...
   // thresholds = [0.00001, 0.0001, 0.0004, 0.0008, 0.001, 0.005, 0.008];
 
-  let threshold = 10;
+  let threshold = 15;
 
   let bandwidth = 55;
 
@@ -323,6 +333,9 @@ function render_graph() {
   fill_transparency.min = doc_fill_opacity[0];
   fill_transparency.max = doc_fill_opacity[1];
   color_blending = document.getElementById("color_blending").value;
+  let num_remove_contours = document.getElementById("remove_contours").value;
+
+
 
   var settings = {
     "colors": colorCodes,
@@ -654,7 +667,29 @@ function render_graph() {
           .attr("stroke", d => prob(colorCodes[i], scale_stroke_transparency(d.value)))
       }
 
-      // console.log(d3.selectAll(".contours,.halos")["_groups"][0][0]);
+      let num_contours = d3.selectAll(".contours,.halos")["_groups"][0].length;
+
+      let remove_contours = d3.select("#remove_contours");
+      remove_contours
+        .attr("min", 0)
+        .attr("max", num_contours)
+
+      let remove_contours_ticks = d3.select("#remove_contours_ticks");
+      d3.select("#remove_contours_ticks").selectChildren("option").remove();
+
+      for (i=0; i <=num_contours; i++){
+        remove_contours_ticks
+          .append("option")
+          .text(i)
+      }
+      
+      for ( i=num_contours-1; i > num_contours-num_remove_contours; i--){
+        d3.selectAll(".contours,.halos")["_groups"][0][i].remove();
+      }
+      
+      
+      
+
 
       /////////////////////////////////////////////////////////////////////////
       // END //////////////////////////////////////////////////////////////////
