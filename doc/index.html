@@ -47,9 +47,34 @@
         >About this project</a
       >
     </h2>
+    <h3>
+      Data Generation
+    </h3>
+    <p>
+      The data used in the visualization is generated inside a jupyter Notebook: <span class="code">dataset_generation.ipynb</span>. 
+      We used the python library <span class="code">sklearn</span> to train the Machine Learning Network (MLN).
+    </p>
+    <img src="resources/trainMLN.PNG" alt="train MLN" />
+    <p>
+      We split the data into training and test set and trained a simple Neural Network.
+    </p>
+    <img src="resources/create_grid.PNG" alt="create Grid" />
+    <p>
+      Here we generate our grid of feature combinations. We generate a range of feature 
+      values and combine them using <span class="code">np.meshgrid</span>. We stack the resulting 
+      grid so it creates a 2D array where each row represents a point in the grid, and the columns
+      represent the values of the two features.
+    </p>
+    <img src="resources/predict_probabilites.PNG" alt="Predict Probabilities" />
+    <p>
+      We use this grid to predict a probability vector for each entry. This probability
+      vector will later be used for our weighting during the Kernel Density Estimation.
+      At last we create a header while writing the data into a file.
+    </p>
+    <h3>Visualization</h3>
     <p>
       For simplicity, this implementation is contained entirely inside one
-      HTML-file, with inline JS. This is also possible because D3 can be
+      HTML-file, with inline JS: <span class="code">src/index.html</span>. This is also possible because D3 can be
       imported from a remote URL with no real performance loss for our use-case.
       This page documents the different procedures inside the HTML-file that are
       used to create the visualization.
@@ -59,14 +84,14 @@
       In addition to the "main"
       <span class="code">render_graph()</span> function, there are various
       support/helper functions used to compute various operations.
-      <span class="code">getProbsFromMousePos()</span> will be covered belows,
+      <span class="code">getProbsFromMousePos()</span> will be covered below,
       the rest can be seen in the image above.
     </p>
     <img src="resources/options_dict.png" alt="options_dict" />
     <p>
       The most important function is <span class="code">render_graph()</span>,
       where a lot of things happen: first, the current options ("settings") are
-      read out from the corresponding HTMl elements. In addition, the dictionary
+      read from the corresponding HTML elements. In addition, the dictionary
       for the JSON DSL is created here.
     </p>
     <img src="resources/read_data.png" alt="read_data" />
@@ -92,6 +117,13 @@
       After the canvas is set up, the contour edges are computed and later added
       to the canvas. This (and the following computations) happens once per
       class, as they all need separate contours to be computed.
+      This function <span class="code">d3.contourDensity()</span> takes the 2D grid
+      as input to first filter the data with a Kernel Density Estimation and then 
+      generates the contours. We provide a weighting function so that the resulting
+      scalar field is weighted according to the probability vector of the respective
+      class. We also give the size of the plot, the width of the kernel (bandwidth),
+      the size of the cell during marching squares (cellsize) and the thresholds
+      for the contour generation (threshold).
     </p>
     <img src="resources/add_to_svg.png" alt="add_to_svg" />
     <p>
