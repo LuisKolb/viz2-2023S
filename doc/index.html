@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Documentation | Contour Visualization for Machine Learning models
+    </title>
+    <style>
+      body {
+        background-color: gray;
+        color: white;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        font-size: x-large;
+        max-width: 70%;
+        margin: 0 auto 0;
+        font-family: sans-serif;
+      }
+      a {
+        color: lightblue;
+      }
+      h1,
+      h2 {
+        text-align: center;
+      }
+      p {
+        width: 100%;
+      }
+      img {
+        width: 90%;
+      }
+      footer {
+        margin: 2em 0 2em;
+      }
+      .code {
+        color: yellow;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Documentation</h1>
+    <h2>
+      <a href="https://luiskolb.github.io/viz2-2023S/html/"
+        >About this project</a
+      >
+    </h2>
+    <p>
+      For simplicity, this implementation is contained entirely inside one
+      HTML-file, with inline JS. This is also possible because D3 can be
+      imported from a remote URL with no real performance loss for our use-case.
+      This page documents the different procedures inside the HTML-file that are
+      used to create the visualization.
+    </p>
+    <img src="resources/support_functions.png" alt="support_functions" />
+    <p>
+      In addition to the "main"
+      <span class="code">render_graph()</span> function, there are various
+      support/helper functions used to compute various operations.
+      <span class="code">getProbsFromMousePos()</span> will be covered belows,
+      the rest can be seen in the image above.
+    </p>
+    <img src="resources/options_dict.png" alt="options_dict" />
+    <p>
+      The most important function is <span class="code">render_graph()</span>,
+      where a lot of things happen: first, the current options ("settings") are
+      read out from the corresponding HTMl elements. In addition, the dictionary
+      for the JSON DSL is created here.
+    </p>
+    <img src="resources/read_data.png" alt="read_data" />
+    <p>
+      Then, the data from the selected file is loaded and parsed, and we ensure
+      the format is correct.
+    </p>
+    <p>From there...</p>
+    <ul>
+      <li>
+        the raw data array is split into a grid (of the two features) and a
+        probability array (probability of a class per-point on the grid)
+      </li>
+      <li>scaling parameters are computed</li>
+      <li>and the canvas for D3 is set up, including axes.</li>
+    </ul>
+    <p>
+      For each of these steps, the respective areas are marked with comment
+      blocks in the source HTML file.
+    </p>
+    <img src="resources/compute_contours.png" alt="compute_contours" />
+    <p>
+      After the canvas is set up, the contour edges are computed and later added
+      to the canvas. This (and the following computations) happens once per
+      class, as they all need separate contours to be computed.
+    </p>
+    <img src="resources/add_to_svg.png" alt="add_to_svg" />
+    <p>
+      The path elements are then appended to their respective svg elements. If
+      enabled, halos are added in the same manner here. In addition, we add
+      mouseover event handlers here that enable the tooltip functionality when
+      hovering over the plot.
+    </p>
+    <img src="resources/inverse_scale.png" alt="inverse_scale" />
+    <p>
+      To get the correct probability data for any given grid position, we need
+      to use the previously computed scale to map back from pixel coordinates to
+      the "original" feature space. We also need to use a "custom"
+      closest-element-in-array function to choose the best approximate
+      probability entry for the hovered position from the original data array.
+    </p>
+    <img src="resources/legend.png" alt="legend" />
+    <p>
+      The legend is also added to the plot, for all the classes in one step.
+    </p>
+    <img src="resources/sort_contours.png" alt="sort_contours" />
+    <p>
+      Countours are then sorted according to their significance
+      ("weight"/value).
+    </p>
+    <p>
+      The rest of the <span class="code">render_graph()</span> function
+      configures the plot according to some of the options.
+    </p>
+    <br />
+    <p>
+      The HTML elements will not be covered here, as they are rather
+      self-explanatory/self-documenting and are best referenced from the source
+      HTML file.
+    </p>
+    <footer></footer>
+  </body>
+</html>

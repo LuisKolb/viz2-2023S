@@ -1,5 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home | Contour Visualization for Machine Learning models</title>
     <style>
       body {
         background-color: gray;
@@ -22,8 +27,17 @@
       footer {
         margin: 2em 0 2em;
       }
+      .highlight {
+        width: 90%;
+        border: solid;
+        border-color: white;
+        text-align: center;
+        padding: 1em 0 1em;
+        font-size: xx-large;
+        font-weight: bolder;
+        margin: 1em 0 0;
+      }
     </style>
-    <title>Contour Visualization for Machine Learning models</title>
   </head>
   <body>
     <h1>
@@ -35,7 +49,9 @@
     <a href="https://luiskolb.github.io/viz2-2023S/src/">
       <img src="resources/screenshot.jpg" alt="screenshot of the application" />
     </a>
-    <p><a href="https://luiskolb.github.io/viz2-2023S/src/">Try it out!</a></p>
+    <a href="https://luiskolb.github.io/viz2-2023S/src/" class="highlight"
+      >Try it out!</a
+    >
     <p>
       Our project uses contour plots to visualize the probability of a class
       prediction by a mutliclass classification model, given two scalar
@@ -53,10 +69,9 @@
     </p>
     <ul>
       <li>automatically isolate every combination of two features</li>
-      <li>
-        train a Machine Learning model on these two features
-        <li style="margin-left: 2em;">(for the example datasets
-            we opted for a simple MLP)</li> 
+      <li>train a Machine Learning model on these two features</li>
+      <li style="margin-left: 2em">
+        (for the example datasets we opted for a simple MLP)
       </li>
       <li>build a grid of your feature space</li>
       <li>get predictions for every combination of feature values</li>
@@ -68,8 +83,9 @@
       variables and classification problems. If your data fits these criteria,
       you can explore the impact of two different features on the prediction.
       For a higher-feature space multiple plots would need to be created, each
-      trained on the two features and, for example, a third feature with <span style="font-weight: bold;">n</span>
-      values to produce <span style="font-weight: bold;">n</span> datasets.
+      trained on the two features and, for example, a third feature with
+      <span style="font-weight: bold">n</span> values to produce
+      <span style="font-weight: bold">n</span> datasets.
     </p>
 
     <footer>
