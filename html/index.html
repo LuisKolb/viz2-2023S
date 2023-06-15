@@ -1,0 +1,79 @@
+<html>
+  <head>
+    <style>
+      body {
+        background-color: gray;
+        color: white;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        font-size: x-large;
+        max-width: 70%;
+        margin: 0 auto 0;
+        font-family: sans-serif;
+      }
+      a {
+        color: lightblue;
+      }
+      h1,
+      h2 {
+        text-align: center;
+      }
+      footer {
+        margin: 2em 0 2em;
+      }
+    </style>
+    <title>Contour Visualization for Machine Learning models</title>
+  </head>
+  <body>
+    <h1>
+      <a href="https://doi.org/10.1109/tvcg.2022.3209482">
+        A Framework for Multiclass Contour Visualization - Li et al. 2023</a
+      >
+    </h1>
+    <h2>VU Visualisierung 2 (186.833)</h2>
+    <a href="https://luiskolb.github.io/viz2-2023S/src/">
+      <img src="resources/screenshot.jpg" alt="screenshot of the application" />
+    </a>
+    <p><a href="https://luiskolb.github.io/viz2-2023S/src/">Try it out!</a></p>
+    <p>
+      Our project uses contour plots to visualize the probability of a class
+      prediction by a mutliclass classification model, given two scalar
+      variables. In addition, we provide a domain-specific language ("DSL"),
+      similar to the DSL propsed in the paper by Li et al. This implementation
+      is modeled after the approach taken in the paper. This DSL provides access
+      to the various configuration options included in our implementation,
+      easily copy-able as JSON text.
+    </p>
+
+    <p>
+      While our implementation provides two datasets to serve as example data,
+      it is designed to be used with your own data and models. Included in the
+      repository is a Jupyter Notebook with the basic procedures to...
+    </p>
+    <ul>
+      <li>automatically isolate every combination of two features</li>
+      <li>
+        train a Machine Learning model on these two features
+        <li style="margin-left: 2em;">(for the example datasets
+            we opted for a simple MLP)</li> 
+      </li>
+      <li>build a grid of your feature space</li>
+      <li>get predictions for every combination of feature values</li>
+      <li>and save a file in the format our implementation expects.</li>
+    </ul>
+    <p>
+      Using these steps, you can easily create your own model from your own
+      data. Due to the nature of contour plots, we are limited to scalar
+      variables and classification problems. If your data fits these criteria,
+      you can explore the impact of two different features on the prediction.
+      For a higher-feature space multiple plots would need to be created, each
+      trained on the two features and, for example, a third feature with <span style="font-weight: bold;">n</span>
+      values to produce <span style="font-weight: bold;">n</span> datasets.
+    </p>
+
+    <footer>
+      <a href="https://luiskolb.github.io/viz2-2023S/doc/">Documentation</a>
+    </footer>
+  </body>
+</html>
