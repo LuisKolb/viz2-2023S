@@ -23,13 +23,13 @@
     <!-- <link rel="stylesheet" href="style.css"> -->
   </head>
   <body>
-    <h1>D3.js Contour Plot Example</h1>
+    <h1>Framework for Multiclass Contour Visualizaton for CNN</h1>
     <div class="container-fluid">
         <div class="row">
           <div class="col-lg-4">
             <form>
               <div class="form-group row">
-                <label class="col-sm-5 col-form-label" for="dataset_selector">select a dataset</label>
+                <label class="col-sm-5 col-form-label" for="dataset_selector">Select a dataset</label>
                 <div class="col-sm-7">
                   <select class="form-control" name="dataset" id="dataset_selector" onchange="updateDataset()">
                     <option value="iris/petal length (cm)_vs_petal width (cm).txt" selected>
@@ -73,12 +73,10 @@
               </div>
 
               <br>
-              <div title="Set areas with low confidence to 0" class="form-group row">
-                <label for="cutoff" class="col-sm-6 col-form-label">Minimum confidence</label>
+              <div title="Set areas with low confidence to 0. Min=0 max=0.9" class="form-group row">
+                <label for="cutoff" class="col-sm-6 col-form-label">Minimum confidence <span id="confidence_value"></span></label>
                 <div class="col-sm-10">
                   <input type="range" class="form-control" id="cutoff" min="0" value="0.3" max="0.9" step="0.1" list="cutoff_ticks" oninput="updateOptions()">
-                  <span style="margin-right: 75%;">0.0</span>
-                  <span>0.9</span>
                   <datalist id="cutoff_ticks">
                     <option>0.0</option>
                     <option>0.3</option>
@@ -87,17 +85,33 @@
                   </datalist>
                 </div>
               </div>
+              <div title="Bandwidth of the gaussian blur. Min=16 max= 64" class="form-group row">
+                <label for="bandwidth" class="col-sm-6 col-form-label">Kernel bandwidth <span id="bandwidth_value"></span></label>
+                <div class="col-sm-10">
+                  <input type="range" class="form-control" id="bandwidth" min="16" value="38" max="64" step="1" list="bandwidth_ticks" oninput="updateOptions()">
+                  <span style="margin-right: 75%;"></span>
+                  <span></span>
+                  <datalist id="bandwidth_ticks">
+                    <option>16</option>
+                    <option>24</option>
+                    <option>32</option>
+                    <option>40</option>
+                    <option>48</option>
+                    <option>56</option>
+                    <option>64</option>
+                  </datalist>
+                </div>
+              </div>
               <div title="Remove contours from top to bottom" class="form-group row">
                 <label for="remove_contours" class="col-sm-6 col-form-label">Remove contours</label>
                 <div class="col-sm-10">
-                  <input type="range" class="form-control" id="remove_contours" min="0" value="0" max="10" step="1" list="cutoff_ticks" oninput="updateOptions()">
+                  <input type="range" class="form-control" id="remove_contours" min="0" value="0" max="10" step="1" list="remove_contours_ticks" oninput="updateOptions()">
                   <span style="margin-right: 75%;"></span>
                   <span></span>
                   <datalist id="remove_contours_ticks">
                   </datalist>
                 </div>
               </div>
-              <br>
 
               <div class="form-group row" title="An array of hex codes separated by commas">
                 <label for="line_color" class="col-sm-5 col-form-label">Plot colors</label>
@@ -108,7 +122,7 @@
               <div class="form-group row" title="Min and max values of the fill opacity.">
                 <label for="fill_opacity" class="col-sm-5 col-form-label">Fill opacity</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="fill_opacity" value="0.1, 0.5" oninput="updateOptions()">
+                  <input type="text" class="form-control" id="fill_opacity" value="0.1,0.5" oninput="updateOptions()">
                 </div>
               </div>
               <div class="form-group row" title="Either a single integer number or an array of numbers">
@@ -124,15 +138,15 @@
                 </div>
               </div>
               <div class="form-group row" title="Min and max values of the stroke width.">
-                <label for="line_color" class="col-sm-5 col-form-label">Line width</label>
+                <label for="line_width" class="col-sm-5 col-form-label">Line width</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="line_width" value="2, 7" oninput="updateOptions()">
+                  <input type="text" class="form-control" id="line_width" value="2,7" oninput="updateOptions()">
                 </div>
               </div>
               <div class="form-group row" title="Min and max values of the stroke opacity.">
                 <label for="line_opacity" class="col-sm-5 col-form-label">Line opacity</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="line_opacity" value="0.7, 1" oninput="updateOptions()">
+                  <input type="text" class="form-control" id="line_opacity" value="0.7,1" oninput="updateOptions()">
                 </div>
               </div>
               <div class="form-group row" >
@@ -171,7 +185,7 @@
               </div>
               <div class="form-group row">
                 <textarea class="form-control" name="settings_output" id="settings_output" cols="50" rows="10"></textarea>
-                <button class="btn btn-primary mb-2" id="import_settings" onclick="applyJSONSettings()">apply settings from textarea</button>
+                <button type="button" class="btn btn-primary mb-2" id="import_settings" onclick="applyJSONSettings()">apply settings from textarea</button>
               </div>
 
             </form>
@@ -198,9 +212,18 @@ function updateOptions() {
 function applyJSONSettings() {
   var jsonSettings = document.getElementById('settings_output').value;
   var settings = JSON.parse(jsonSettings);
-
-  document.getElementById("cutoff").value = settings.cutoff
-  document.getElementById("threshold").value = settings.threshold
+  document.getElementById("threshold").value = settings.line.threshold;
+  document.getElementById("dash_array").value = settings.line.dash_array;
+  document.getElementById("line_color").value = settings.colors
+  document.getElementById("line_width").value = settings.line.width;
+  document.getElementById("line_opacity").value = settings.line.opacity;
+  document.getElementById("render_halos").checked = settings.line.halo.render;
+  document.getElementById("halo_color").value = settings.line.halo.color;
+  document.getElementById("halo_width").value = settings.line.halo.width;
+  document.getElementById("fill_opacity").value = settings.fill.opacity;
+  document.getElementById("color_blending").value = settings.blending;
+  document.getElementById("cutoff").value = settings.cutoff;
+  document.getElementById("bandwidth").value = settings.bandwidth;
 
   render_graph()
 }
@@ -273,18 +296,16 @@ function render_graph() {
   // Contour generation parameter /////////////////////////////////////////
   // thresholds can be added as array, but they have to be insanely small, for whatever reason...
   // thresholds = [0.00001, 0.0001, 0.0004, 0.0008, 0.001, 0.005, 0.008];
-
-  let threshold = 15;
-
-  let bandwidth = 55;
+  let bandwidth = 38;
+  let cellsize = 2;
 
   let stroke_width = {
-    min: 1.5,
-    max: 4.5
+    min: 2,
+    max: 7
   };
 
   let stroke_transparency = {
-    min: 0.1,
+    min: 0.7,
     max: 1.0
   };
 
@@ -313,18 +334,19 @@ function render_graph() {
   /////////////////////////////////////////////////////////////////////////
   // read options /////////////////////////////////////////////////////////
   var cutoff = document.getElementById("cutoff").value
-  threshold = document.getElementById("threshold").value.split(",");
+  bandwidth = document.getElementById("bandwidth").value
+  let threshold = document.getElementById("threshold").value.split(",");
   threshold = threshold.length == 1 ? threshold[0] : threshold;
   dash_array = document.getElementById("dash_array").value.split(",");
   dash_array = dash_array.length == 1 ? dash_array[0] : dash_array;
-  render_halos = document.getElementById("render_halos").checked;
   colorCodes = document.getElementById("line_color").value ? document.getElementById("line_color").value.split(",") : ["#e31111", "#1153e3", "#11e32f", "#e39a11", "#d311e3", "#1172e3"];
   let doc_stroke_width = document.getElementById("line_width").value.split(",");
-  stroke_width.min = doc_stroke_width[0];;
-  stroke_width.max = doc_stroke_width[1];;
+  stroke_width.min = doc_stroke_width[0];
+  stroke_width.max = doc_stroke_width[1];
   let doc_line_opacity = document.getElementById("line_opacity").value.split(",");
   stroke_transparency.min = doc_line_opacity[0];
   stroke_transparency.max = doc_line_opacity[1];
+  render_halos = document.getElementById("render_halos").checked;
   halo_color = document.getElementById("halo_color").value;
   let doc_halo_width = document.getElementById("halo_width").value.split(",");
   halo_width.min = doc_halo_width[0];
@@ -335,25 +357,28 @@ function render_graph() {
   color_blending = document.getElementById("color_blending").value;
   let num_remove_contours = document.getElementById("remove_contours").value;
 
-
-
+  document.getElementById("bandwidth_value").innerHTML = bandwidth;
+  document.getElementById("confidence_value").innerHTML = cutoff;
+  
   var settings = {
     "colors": colorCodes,
     "fill": {
-      "opacity": fill_transparency
+      "opacity": [doc_fill_opacity[0],doc_fill_opacity[1]]
     },
     "line": {
       "threshold": threshold,
-      "dash array": dash_array,
-      "width": stroke_width,
-      "opacity": stroke_transparency,
+      "dash_array": dash_array,
+      "width": [doc_stroke_width[0], doc_stroke_width[1]],
+      "opacity": [doc_line_opacity[0], doc_line_opacity[1]],
       "halo": {
-        "width": halo_width,
+        "render": render_halos,
+        "width": [doc_halo_width[0], doc_halo_width[1]],
         "color": halo_color
       }
     },
     "blending": color_blending,
     "cutoff": cutoff,
+    "bandwidth": bandwidth,
   };
   var jsonSettings = JSON.stringify(settings, null, 2);
 
@@ -485,31 +510,6 @@ function render_graph() {
         .text(header[1]);
 
       /////////////////////////////////////////////////////////////////////////
-      // Legend ///////////////////////////////////////////////////////////////
-
-      const legend_labels = header.slice(2);
-      contour_svg.selectAll("legends_dots")
-        .data(legend_labels)
-        .enter()
-        .append("circle")
-          .attr("cx", size.x)
-          .attr("cy", (d,i)=> 100 + i * 25)
-          .attr("r", 7)
-          .style("fill", (d, i) => colorCodes[i]);
-
-      contour_svg.selectAll("legend_labels")
-        .data(legend_labels)
-        .enter()
-        .append("text")
-          .attr("x", size.x + 10)
-          .attr("y", (d, i) => 100 + i * 25)
-          .style("fill", "black")
-          .text((d) => d)
-          .attr("text-anchor", "left")
-          .style("alignment-baseline", "middle");
-
-
-      /////////////////////////////////////////////////////////////////////////
       // Contours data generation /////////////////////////////////////////////
       var contour_group = contour_svg
         .append("g")
@@ -545,6 +545,7 @@ function render_graph() {
             return probabilities[j][i];
           })
           .bandwidth(bandwidth)
+          .cellSize(cellsize)
           .thresholds(threshold)
           (grid_2d);
         
@@ -595,6 +596,31 @@ function render_graph() {
 
         allContours = allContours.concat(contours);
       }
+
+      /////////////////////////////////////////////////////////////////////////
+      // Legend ///////////////////////////////////////////////////////////////
+
+      const legend_labels = header.slice(2);
+      contour_svg.selectAll("legends_dots")
+        .data(legend_labels)
+        .enter()
+        .append("circle")
+          .attr("cx", size.x)
+          .attr("cy", (d,i)=> 100 + i * 25)
+          .attr("r", 7)
+          .style("fill", (d, i) => colorCodes[i]);
+
+      contour_svg.selectAll("legend_labels")
+        .data(legend_labels)
+        .enter()
+        .append("text")
+          .attr("x", size.x + 10)
+          .attr("y", (d, i) => 100 + i * 25)
+          .style("fill", "black")
+          .text((d) => d)
+          .attr("text-anchor", "left")
+          .style("alignment-baseline", "middle");
+
 
       /////////////////////////////////////////////////////////////////////////
       // Sort contours by values //////////////////////////////////////////////
