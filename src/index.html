@@ -108,7 +108,7 @@
               <div class="form-group row" title="Min and max values of the fill opacity.">
                 <label for="fill_opacity" class="col-sm-5 col-form-label">Fill opacity</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="fill_opacity" value="0.1, 0.5" oninput="updateOptions()">
+                  <input type="text" class="form-control" id="fill_opacity" value="0.1,0.5" oninput="updateOptions()">
                 </div>
               </div>
               <div class="form-group row" title="Either a single integer number or an array of numbers">
@@ -124,15 +124,15 @@
                 </div>
               </div>
               <div class="form-group row" title="Min and max values of the stroke width.">
-                <label for="line_color" class="col-sm-5 col-form-label">Line width</label>
+                <label for="line_width" class="col-sm-5 col-form-label">Line width</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="line_width" value="2, 7" oninput="updateOptions()">
+                  <input type="text" class="form-control" id="line_width" value="2,7" oninput="updateOptions()">
                 </div>
               </div>
               <div class="form-group row" title="Min and max values of the stroke opacity.">
                 <label for="line_opacity" class="col-sm-5 col-form-label">Line opacity</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" id="line_opacity" value="0.7, 1" oninput="updateOptions()">
+                  <input type="text" class="form-control" id="line_opacity" value="0.7,1" oninput="updateOptions()">
                 </div>
               </div>
               <div class="form-group row" >
@@ -171,7 +171,7 @@
               </div>
               <div class="form-group row">
                 <textarea class="form-control" name="settings_output" id="settings_output" cols="50" rows="10"></textarea>
-                <button class="btn btn-primary mb-2" id="import_settings" onclick="applyJSONSettings()">apply settings from textarea</button>
+                <button type="button" class="btn btn-primary mb-2" id="import_settings" onclick="applyJSONSettings()">apply settings from textarea</button>
               </div>
 
             </form>
@@ -198,9 +198,19 @@ function updateOptions() {
 function applyJSONSettings() {
   var jsonSettings = document.getElementById('settings_output').value;
   var settings = JSON.parse(jsonSettings);
-
-  document.getElementById("cutoff").value = settings.cutoff
-  document.getElementById("threshold").value = settings.threshold
+  console.log(settings);
+  document.getElementById("threshold").value = settings.line.threshold;
+  document.getElementById("dash_array").value = settings.line.dash_array;
+  document.getElementById("line_color").value = settings.colors
+  console.log(settings.line.width);
+  document.getElementById("line_width").value = settings.line.width;
+  document.getElementById("line_opacity").value = settings.line.opacity;
+  document.getElementById("render_halos").checked = settings.line.halo.render;
+  document.getElementById("halo_color").value = settings.line.halo.color;
+  document.getElementById("halo_width").value = settings.line.halo.width;
+  document.getElementById("fill_opacity").value = settings.fill.opacity;
+  document.getElementById("color_blending").value = settings.blending;
+  document.getElementById("cutoff").value = settings.cutoff;
 
   render_graph()
 }
@@ -273,18 +283,15 @@ function render_graph() {
   // Contour generation parameter /////////////////////////////////////////
   // thresholds can be added as array, but they have to be insanely small, for whatever reason...
   // thresholds = [0.00001, 0.0001, 0.0004, 0.0008, 0.001, 0.005, 0.008];
-
-  let threshold = 15;
-
   let bandwidth = 55;
 
   let stroke_width = {
-    min: 1.5,
-    max: 4.5
+    min: 2,
+    max: 7
   };
 
   let stroke_transparency = {
-    min: 0.1,
+    min: 0.7,
     max: 1.0
   };
 
@@ -313,18 +320,18 @@ function render_graph() {
   /////////////////////////////////////////////////////////////////////////
   // read options /////////////////////////////////////////////////////////
   var cutoff = document.getElementById("cutoff").value
-  threshold = document.getElementById("threshold").value.split(",");
+  let threshold = document.getElementById("threshold").value.split(",");
   threshold = threshold.length == 1 ? threshold[0] : threshold;
   dash_array = document.getElementById("dash_array").value.split(",");
   dash_array = dash_array.length == 1 ? dash_array[0] : dash_array;
-  render_halos = document.getElementById("render_halos").checked;
   colorCodes = document.getElementById("line_color").value ? document.getElementById("line_color").value.split(",") : ["#e31111", "#1153e3", "#11e32f", "#e39a11", "#d311e3", "#1172e3"];
   let doc_stroke_width = document.getElementById("line_width").value.split(",");
-  stroke_width.min = doc_stroke_width[0];;
-  stroke_width.max = doc_stroke_width[1];;
+  stroke_width.min = doc_stroke_width[0];
+  stroke_width.max = doc_stroke_width[1];
   let doc_line_opacity = document.getElementById("line_opacity").value.split(",");
   stroke_transparency.min = doc_line_opacity[0];
   stroke_transparency.max = doc_line_opacity[1];
+  render_halos = document.getElementById("render_halos").checked;
   halo_color = document.getElementById("halo_color").value;
   let doc_halo_width = document.getElementById("halo_width").value.split(",");
   halo_width.min = doc_halo_width[0];
@@ -336,19 +343,20 @@ function render_graph() {
   let num_remove_contours = document.getElementById("remove_contours").value;
 
 
-
+  
   var settings = {
     "colors": colorCodes,
     "fill": {
-      "opacity": fill_transparency
+      "opacity": [doc_fill_opacity[0],doc_fill_opacity[1]]
     },
     "line": {
       "threshold": threshold,
-      "dash array": dash_array,
-      "width": stroke_width,
-      "opacity": stroke_transparency,
+      "dash_array": dash_array,
+      "width": [doc_stroke_width[0], doc_stroke_width[1]],
+      "opacity": [doc_line_opacity[0], doc_line_opacity[1]],
       "halo": {
-        "width": halo_width,
+        "render": render_halos,
+        "width": [doc_halo_width[0], doc_halo_width[1]],
         "color": halo_color
       }
     },
