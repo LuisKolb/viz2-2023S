@@ -29,7 +29,7 @@
           <div class="col-lg-4">
             <form>
               <div class="form-group row">
-                <label class="col-sm-5 col-form-label" for="dataset_selector">select a dataset</label>
+                <label class="col-sm-5 col-form-label" for="dataset_selector">Select a dataset</label>
                 <div class="col-sm-7">
                   <select class="form-control" name="dataset" id="dataset_selector" onchange="updateDataset()">
                     <option value="iris/petal length (cm)_vs_petal width (cm).txt" selected>
@@ -73,12 +73,10 @@
               </div>
 
               <br>
-              <div title="Set areas with low confidence to 0" class="form-group row">
-                <label for="cutoff" class="col-sm-6 col-form-label">Minimum confidence</label>
+              <div title="Set areas with low confidence to 0. Min=0 max=0.9" class="form-group row">
+                <label for="cutoff" class="col-sm-6 col-form-label">Minimum confidence <span id="confidence_value"></span></label>
                 <div class="col-sm-10">
                   <input type="range" class="form-control" id="cutoff" min="0" value="0.3" max="0.9" step="0.1" list="cutoff_ticks" oninput="updateOptions()">
-                  <span style="margin-right: 75%;">0.0</span>
-                  <span>0.9</span>
                   <datalist id="cutoff_ticks">
                     <option>0.0</option>
                     <option>0.3</option>
@@ -87,17 +85,33 @@
                   </datalist>
                 </div>
               </div>
+              <div title="Bandwidth of the gaussian blur. Min=16 max= 64" class="form-group row">
+                <label for="bandwidth" class="col-sm-6 col-form-label">Kernel bandwidth <span id="bandwidth_value"></span></label>
+                <div class="col-sm-10">
+                  <input type="range" class="form-control" id="bandwidth" min="16" value="38" max="64" step="1" list="bandwidth_ticks" oninput="updateOptions()">
+                  <span style="margin-right: 75%;"></span>
+                  <span></span>
+                  <datalist id="bandwidth_ticks">
+                    <option>16</option>
+                    <option>24</option>
+                    <option>32</option>
+                    <option>40</option>
+                    <option>48</option>
+                    <option>56</option>
+                    <option>64</option>
+                  </datalist>
+                </div>
+              </div>
               <div title="Remove contours from top to bottom" class="form-group row">
                 <label for="remove_contours" class="col-sm-6 col-form-label">Remove contours</label>
                 <div class="col-sm-10">
-                  <input type="range" class="form-control" id="remove_contours" min="0" value="0" max="10" step="1" list="cutoff_ticks" oninput="updateOptions()">
+                  <input type="range" class="form-control" id="remove_contours" min="0" value="0" max="10" step="1" list="remove_contours_ticks" oninput="updateOptions()">
                   <span style="margin-right: 75%;"></span>
                   <span></span>
                   <datalist id="remove_contours_ticks">
                   </datalist>
                 </div>
               </div>
-              <br>
 
               <div class="form-group row" title="An array of hex codes separated by commas">
                 <label for="line_color" class="col-sm-5 col-form-label">Plot colors</label>
@@ -198,11 +212,9 @@ function updateOptions() {
 function applyJSONSettings() {
   var jsonSettings = document.getElementById('settings_output').value;
   var settings = JSON.parse(jsonSettings);
-  console.log(settings);
   document.getElementById("threshold").value = settings.line.threshold;
   document.getElementById("dash_array").value = settings.line.dash_array;
   document.getElementById("line_color").value = settings.colors
-  console.log(settings.line.width);
   document.getElementById("line_width").value = settings.line.width;
   document.getElementById("line_opacity").value = settings.line.opacity;
   document.getElementById("render_halos").checked = settings.line.halo.render;
@@ -211,6 +223,7 @@ function applyJSONSettings() {
   document.getElementById("fill_opacity").value = settings.fill.opacity;
   document.getElementById("color_blending").value = settings.blending;
   document.getElementById("cutoff").value = settings.cutoff;
+  document.getElementById("bandwidth").value = settings.bandwidth;
 
   render_graph()
 }
@@ -283,7 +296,8 @@ function render_graph() {
   // Contour generation parameter /////////////////////////////////////////
   // thresholds can be added as array, but they have to be insanely small, for whatever reason...
   // thresholds = [0.00001, 0.0001, 0.0004, 0.0008, 0.001, 0.005, 0.008];
-  let bandwidth = 55;
+  let bandwidth = 38;
+  let cellsize = 2;
 
   let stroke_width = {
     min: 2,
@@ -320,6 +334,7 @@ function render_graph() {
   /////////////////////////////////////////////////////////////////////////
   // read options /////////////////////////////////////////////////////////
   var cutoff = document.getElementById("cutoff").value
+  bandwidth = document.getElementById("bandwidth").value
   let threshold = document.getElementById("threshold").value.split(",");
   threshold = threshold.length == 1 ? threshold[0] : threshold;
   dash_array = document.getElementById("dash_array").value.split(",");
@@ -342,7 +357,8 @@ function render_graph() {
   color_blending = document.getElementById("color_blending").value;
   let num_remove_contours = document.getElementById("remove_contours").value;
 
-
+  document.getElementById("bandwidth_value").innerHTML = bandwidth;
+  document.getElementById("confidence_value").innerHTML = cutoff;
   
   var settings = {
     "colors": colorCodes,
@@ -362,6 +378,7 @@ function render_graph() {
     },
     "blending": color_blending,
     "cutoff": cutoff,
+    "bandwidth": bandwidth,
   };
   var jsonSettings = JSON.stringify(settings, null, 2);
 
@@ -528,6 +545,7 @@ function render_graph() {
             return probabilities[j][i];
           })
           .bandwidth(bandwidth)
+          .cellSize(cellsize)
           .thresholds(threshold)
           (grid_2d);
         
