@@ -23,7 +23,7 @@
     <!-- <link rel="stylesheet" href="style.css"> -->
   </head>
   <body>
-    <h1>D3.js Contour Plot Example</h1>
+    <h1>Framework for Multiclass Contour Visualizaton for CNN</h1>
     <div class="container-fluid">
         <div class="row">
           <div class="col-lg-4">
@@ -493,31 +493,6 @@ function render_graph() {
         .text(header[1]);
 
       /////////////////////////////////////////////////////////////////////////
-      // Legend ///////////////////////////////////////////////////////////////
-
-      const legend_labels = header.slice(2);
-      contour_svg.selectAll("legends_dots")
-        .data(legend_labels)
-        .enter()
-        .append("circle")
-          .attr("cx", size.x)
-          .attr("cy", (d,i)=> 100 + i * 25)
-          .attr("r", 7)
-          .style("fill", (d, i) => colorCodes[i]);
-
-      contour_svg.selectAll("legend_labels")
-        .data(legend_labels)
-        .enter()
-        .append("text")
-          .attr("x", size.x + 10)
-          .attr("y", (d, i) => 100 + i * 25)
-          .style("fill", "black")
-          .text((d) => d)
-          .attr("text-anchor", "left")
-          .style("alignment-baseline", "middle");
-
-
-      /////////////////////////////////////////////////////////////////////////
       // Contours data generation /////////////////////////////////////////////
       var contour_group = contour_svg
         .append("g")
@@ -603,6 +578,31 @@ function render_graph() {
 
         allContours = allContours.concat(contours);
       }
+
+      /////////////////////////////////////////////////////////////////////////
+      // Legend ///////////////////////////////////////////////////////////////
+
+      const legend_labels = header.slice(2);
+      contour_svg.selectAll("legends_dots")
+        .data(legend_labels)
+        .enter()
+        .append("circle")
+          .attr("cx", size.x)
+          .attr("cy", (d,i)=> 100 + i * 25)
+          .attr("r", 7)
+          .style("fill", (d, i) => colorCodes[i]);
+
+      contour_svg.selectAll("legend_labels")
+        .data(legend_labels)
+        .enter()
+        .append("text")
+          .attr("x", size.x + 10)
+          .attr("y", (d, i) => 100 + i * 25)
+          .style("fill", "black")
+          .text((d) => d)
+          .attr("text-anchor", "left")
+          .style("alignment-baseline", "middle");
+
 
       /////////////////////////////////////////////////////////////////////////
       // Sort contours by values //////////////////////////////////////////////
