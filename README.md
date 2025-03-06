@@ -1,13 +1,9 @@
+# Github Page Link
+Click here to see visualization
+
+https://luiskolb.github.io/viz2-2023S/src/
+
 # viz2-2023S
-
-## install the virtual environment
-
-```bash
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
 ## start the webserver
 
 start server using python:
